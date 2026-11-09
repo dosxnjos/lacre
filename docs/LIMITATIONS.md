@@ -50,10 +50,10 @@ never opened. Read this list before buying.
   connected. If that never happens, the archive stays on the phone until iOS prunes old diagnostics on
   its own. A "cleaning up" state that blocks closing the window is planned.
 - **The Apple USB service can lose the iPhone while it keeps charging.** Charging and data are
-  separate: the cable may still charge while the service no longer sees the phone. All three drops seen
-  on 9 Nov 2026 happened while the iPhone was writing the diagnostic (it collects network and USB state),
-  on two different iPhones and ports, so the phone itself likely resets the link. Lacre waits and
-  resumes (one drop came back on its own in 21 s). If "connection lost" stays for more than a few
+  separate: the cable may still charge while the service no longer sees the phone. The two spontaneous
+  drops seen on 9 Nov 2026 happened while the iPhone was writing or sending the diagnostic. Lacre waits
+  and resumes: a test with the cable pulled out mid-check and plugged back resumed on its own in 21 s
+  and still cleaned everything up. If "connection lost" stays for more than a few
   seconds, unplug and replug the cable with the iPhone unlocked; if the iPhone then does not show up at
   all (not even in Apple Devices), Windows' USB stack is stuck: restart the PC.
 - **Older diagnostics are only deleted when you ask.** Archives that were already on the phone before
