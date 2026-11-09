@@ -286,7 +286,7 @@ def test_old_archives_are_kept_and_reported_extra_ones_deleted(fake_device, work
 
 
 def test_archive_being_written_before_the_check_is_not_ours(fake_device, workdir):
-    other = "sysdiagnose_2026.11.09_07-30-00-0300_owner.tar.gz"
+    other = stamped(-3600, "owner")  # started an hour before the check: not ours
     FakeManager.afc = afc = FakeAfc(make_archive(workdir / "dev.tar.gz"),
                                     existing={inprog(other): b"being written before the check"})
 
@@ -299,7 +299,21 @@ def test_archive_being_written_before_the_check_is_not_ours(fake_device, workdir
     res = run(F.collect_fdr("UDID", 60, _nostage))
     assert afc.removed == [NEW_PATH]  # the check took its own archive, not the one already being written
     assert f"{DIR}/{other}" in afc.files
-    assert res["other_archives"] == [{"name": other, "date": "2026-11-09T07:30:00"}]
+    assert res["other_archives"] == [{"name": other, "date": F.archive_date(other)}]
+
+
+def test_buttons_pressed_just_before_start_are_taken_as_the_check(fake_device, workdir):
+    # Real case (09/11): the buttons were pressed a moment before "start"; iOS then ignores new presses
+    # while it writes that archive, so the check must take it instead of waiting forever.
+    synced = "sysdiagnose_2026.11.09_03-21-03-0800_iPhone-OS_iPhone_23G83.tar.gz.synced"
+    FakeAfc_ = FakeAfc(make_archive(workdir / "dev.tar.gz"), existing={synced: b"sent to Apple"}, press_at=None)
+    FakeAfc_.press()  # already being written when the check starts
+    FakeManager.afc = afc = FakeAfc_
+    res = run(F.collect_fdr("UDID", 60, _nostage))
+    assert res["has_fdr"] and afc.removed == [NEW_PATH]
+    assert res["other_archives"] == [{"name": synced, "date": "2026-11-09T03:21:03"}]
+    assert f"{DIR}/{synced}" in afc.files  # an old one is only deleted when the user asks
+    assert asyncio.run(F.delete_archives("UDID", [synced]))["deleted"] == [synced]
 
 
 def test_missing_folder_counts_as_empty(fake_device, workdir):

@@ -88,7 +88,12 @@ PAIR_TIMEOUT_S = 120
 CLOCK_SKEW_S = 600
 
 SYSDIAGNOSE_DIR = "DiagnosticLogs/sysdiagnose"
-RX_FINAL_ARCHIVE = re.compile(r"^sysdiagnose_[^/\\]+\.tar\.gz$")
+# A finished archive; iOS appends ".synced" once it has been sent to Apple (still the same logs).
+RX_FINAL_ARCHIVE = re.compile(r"^sysdiagnose_[^/\\]+\.tar\.gz(?:\.synced)?$")
+# An archive the iPhone started writing this recently before the check is taken as the check's own: the
+# buttons were pressed a moment before "start" (and iOS ignores new presses while one is being written).
+# pymobiledevice3 uses the same 10 minutes.
+ADOPT_RECENT_S = 600
 RX_ARCHIVE_DATE = re.compile(
     r"^sysdiagnose_(\d{4})\.(\d{2})\.(\d{2})_(\d{2})-(\d{2})-(\d{2})(?:-?([+-])(\d{2})(\d{2}))?")
 # Error codes that mean "the device is (temporarily) unreachable": worth waiting for.
@@ -162,6 +167,17 @@ def final_archive_name(entry: str) -> Optional[str]:
         else:
             return None
     return name if RX_FINAL_ARCHIVE.match(name) else None
+
+
+def recent_in_progress(entries: Iterable[str], now: float) -> frozenset[str]:
+    """Final names of archives still being written that started less than ADOPT_RECENT_S ago."""
+    out = set()
+    for e in entries:
+        final = final_archive_name(e)
+        t = archive_epoch(final) if final and final != e else None
+        if t is not None and now - t < ADOPT_RECENT_S:
+            out.add(final)
+    return frozenset(out)
 
 
 def finals_of(entries: Iterable[str]) -> frozenset[str]:
@@ -583,18 +599,21 @@ async def collect_fdr(udid: str, timeout_s: float, stage: Stage) -> dict:
         # 1. what is already on the phone (also pairs, if needed)
         try:
             async with _connect(udid, autopair=True) as cm:
-                before = finals_of(await _list(cm.afc))
+                entries = await _list(cm.afc)
         except EngineError:
             raise
         except asyncio.CancelledError:
             raise
         except Exception as e:  # noqa: BLE001
             raise map_exception(e) from e
+        started = time.time()
+        before = finals_of(entries) - recent_in_progress(entries, started)
+        if before != finals_of(entries):
+            log.info("fdr: a sysdiagnose started just before the check is taken as its own")
         # Written ahead: from here on the phone can get an archive from this check, so the cleanup must
         # survive anything (app closed, crash, power cut). The window bounds what it may delete.
-        started = time.time()
         job = _Job(uuid.uuid4().hex, udid, before,
-                   (started, started + float(timeout_s) + GENERATE_TIMEOUT_S + WATCH_AFTER_CANCEL_S))
+                   (started - ADOPT_RECENT_S, started + float(timeout_s) + GENERATE_TIMEOUT_S + WATCH_AFTER_CANCEL_S))
         _save(job)
 
         # 2. the buttons
