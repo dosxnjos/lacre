@@ -1,6 +1,6 @@
 [project]
 name = "lacre-engine"
-version = "0.2.0"
+version = "0.2.1"
 description = "Lacre (Seal Check) engine: read-only used-iPhone checks over USB, JSON Lines protocol"
 license = "MIT"
 requires-python = ">=3.12,<3.13"
