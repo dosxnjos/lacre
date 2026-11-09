@@ -6,7 +6,9 @@ import { brandMark, icons } from "./art";
 import { localizeModel } from "./models";
 import { buildHtml, buildTxt, reportFileName } from "./report";
 import { initialState, type Actions, type Ctx, type State, type Tab } from "./state";
-import type { Analysis, DeleteArchivesResult, Device, EngineEvent, Hello, Lang, Prereq, RawFdr, RawRead } from "./types";
+import type {
+  Analysis, DeleteArchivesResult, Device, EngineEvent, Hello, Lang, ListArchivesResult, OldArchive, Prereq, RawFdr, RawRead,
+} from "./types";
 import { READ_STEPS } from "./types";
 import { errorText } from "./views/common";
 import { connectView, prereqView, readingView, startupView } from "./views/flow";
@@ -27,9 +29,17 @@ let fdrTicker: number | null = null;
 let pendingCancel = false;
 let restartArmed = false;
 
-/** Old diagnostics still on the connected iPhone (listed by the factory check, not deleted yet). */
+/** Bumped on every change to `s.oldArchives`: a `list_archives` answer from before it is stale. */
+let archivesGen = 0;
+
+function setOldArchives(list: OldArchive[] | null): void {
+  s.oldArchives = list;
+  archivesGen++;
+}
+
+/** Old diagnostics still on the connected iPhone (not deleted yet). */
 function oldArchivesLeft(): number {
-  return !s.demo && s.device ? (s.rawFdr?.other_archives?.length ?? 0) : 0;
+  return !s.demo && s.device ? (s.oldArchives?.length ?? 0) : 0;
 }
 let restartTimer: number | null = null;
 
@@ -292,10 +302,39 @@ function stopPolling(): void {
   if (pollTimer !== null) { clearTimeout(pollTimer); pollTimer = null; }
 }
 
+/** Lists the old diagnostics on the iPhone in the background, right after the quick read (read only).
+ *  A failure is ignored: the card just does not show. */
+async function loadOldArchives(udid: string): Promise<void> {
+  const gen = archivesGen;
+  let r: ListArchivesResult;
+  try {
+    r = await s.backend!.engine<ListArchivesResult>("list_archives", { udid });
+  } catch {
+    return;
+  }
+  // Another iPhone, a restart, the demo, a finished factory check or a delete happened meanwhile.
+  if (gen !== archivesGen || s.demo || s.device?.udid !== udid || s.phase !== "results") return;
+  const list = (Array.isArray(r?.archives) ? r.archives : [])
+    .filter((a) => a && typeof a.name === "string" && a.name)
+    .map((a) => ({ name: a.name, date: typeof a.date === "string" ? a.date : null }));
+  setOldArchives(list);
+  // "Check another iPhone" armed before the list arrived: it was armed without the warning, so disarm it
+  // (the next click shows the warning next to the card).
+  if (list.length && restartArmed) {
+    restartArmed = false;
+    if (restartTimer !== null) { clearTimeout(restartTimer); restartTimer = null; }
+    render();
+    return;
+  }
+  // Only the results tab shows the card now (a full render would drop keyboard focus on the Tests tab).
+  if (list.length && s.tab === "results") render();
+}
+
 async function startRead(): Promise<void> {
   const dev = s.devices.find((d) => d.udid === s.selectedUdid);
   if (!dev) return;
   stopPolling();
+  setOldArchives(null);
   s.device = dev;
   s.phase = "reading";
   s.read = { done: [], current: READ_STEPS[0], analyzing: false, error: null };
@@ -319,7 +358,9 @@ async function startRead(): Promise<void> {
     s.read.error = toEngineError(e);
     s.read.analyzing = false;
     render();
+    return;
   }
+  void loadOldArchives(dev.udid); // not awaited: the results screen is already up
 }
 
 async function startDemo(): Promise<void> {
@@ -335,6 +376,7 @@ async function startDemo(): Promise<void> {
     return;
   }
   s.demo = true;
+  setOldArchives(null); // the demo never shows the old-diagnostics card
   s.raw = raw as unknown as RawRead;
   s.rawFdr = rawFdr as unknown as RawFdr;
   s.device = null;
@@ -359,6 +401,8 @@ async function startFdr(): Promise<void> {
     const rawFdr = await s.backend!.engine<RawFdr>("fdr", { udid: s.device.udid, timeout_s: 900 });
     s.fdr.stage = "done";
     s.rawFdr = rawFdr;
+    // Fresher than the list from the quick read, and it leaves out the check's own archive.
+    setOldArchives(Array.isArray(rawFdr?.other_archives) ? rawFdr.other_archives.slice() : []);
     s.analysis = await s.backend!.engine<Analysis>("analyze", { raw: s.raw, fdr: rawFdr, today: today() });
     s.checkedAt = new Date();
     s.fdr.status = "done";
@@ -373,18 +417,20 @@ async function startFdr(): Promise<void> {
   }
 }
 
-/** Deletes, at the user's request, the diagnostics that were already on the iPhone before the check. */
+/** Deletes, at the user's request, the old diagnostics listed on the iPhone. */
 async function deleteOldArchives(): Promise<void> {
-  const fdrAtStart = s.rawFdr;
+  const listAtStart = s.oldArchives;
   const udid = s.device?.udid;
-  const names = (fdrAtStart?.other_archives ?? []).map((a) => a.name);
-  if (s.archives.busy || s.demo || !udid || !fdrAtStart || !names.length) return;
+  const names = (listAtStart ?? []).map((a) => a.name);
+  // Not during a factory check: the engine would hold the delete until the check ends.
+  if (s.archives.busy || s.demo || !udid || !listAtStart || !names.length || s.fdr.status === "running") return;
   const job: State["archives"] = { busy: true, note: null };
   s.archives = job;
   render();
-  // The device was switched or the check restarted meanwhile (restart replaces s.archives): stale answer.
+  // The device was switched, the app restarted (restart replaces s.archives) or the list was replaced
+  // meanwhile: stale answer.
   const stale = () => {
-    if (s.archives !== job || s.device?.udid !== udid || s.rawFdr !== fdrAtStart) {
+    if (s.archives !== job || s.device?.udid !== udid || s.oldArchives !== listAtStart) {
       if (s.archives === job) { s.archives = { busy: false, note: null }; render(); }
       return true;
     }
@@ -397,9 +443,10 @@ async function deleteOldArchives(): Promise<void> {
     const o = t().fdr.oldArchives; // after the await: the language may have changed meanwhile
     const deleted = new Set(Array.isArray(r?.deleted) ? r.deleted : []);
     const failed = (Array.isArray(r?.failed) ? r.failed : []).filter((n) => names.includes(n));
-    fdrAtStart.other_archives = (fdrAtStart.other_archives ?? []).filter((a) => !deleted.has(a.name));
+    const remaining = listAtStart.filter((a) => !deleted.has(a.name));
+    setOldArchives(remaining);
     const gone = names.filter((n) => deleted.has(n)).length;
-    const left = fdrAtStart.other_archives.length;
+    const left = remaining.length;
     note = failed.length || left
       ? { kind: "err", text: [gone ? o.deleted(gone) : "", o.failed(failed.length || left)].filter(Boolean).join(" ") }
       : { kind: "ok", text: o.deleted(gone) };
@@ -416,8 +463,9 @@ async function deleteOldArchives(): Promise<void> {
   const active = document.activeElement as HTMLElement | null;
   const fromButton = !active || active === document.body || active.dataset?.fk === "delete-archives";
   render();
-  if (fromButton && s.phase === "results" && s.tab === "factory") {
-    (root.querySelector<HTMLElement>('[data-fk="archives-note"]') ?? document.getElementById("factory-title"))?.focus();
+  if (fromButton && s.phase === "results" && (s.tab === "factory" || s.tab === "results")) {
+    (root.querySelector<HTMLElement>('[data-fk="archives-note"]')
+      ?? document.getElementById(s.tab === "factory" ? "factory-title" : "main"))?.focus();
   }
 }
 
@@ -485,8 +533,10 @@ const act: Actions = {
       restartArmed = true;
       const left = oldArchivesLeft();
       if (left) {
-        // Leaving does not delete the old diagnostics: say so where the delete button is.
-        s.tab = "factory";
+        // Leaving does not delete the old diagnostics: say so where the delete button is (results tab,
+        // or the factory tab after a finished check; stay put if the current tab already shows it).
+        const showsCard = s.tab === "results" || (s.tab === "factory" && s.fdr.status === "done");
+        if (!showsCard) s.tab = s.fdr.status === "done" ? "factory" : "results";
         s.archives.note = { kind: "info", text: t().fdr.oldArchives.beforeLeaving(left) };
       }
       render();
@@ -505,6 +555,7 @@ const act: Actions = {
     s.showTech = false;
     s.demo = false;
     s.exportNote = null;
+    setOldArchives(null);
     s.archives = { busy: false, note: null };
     s.fdr = { status: "idle", stage: null, startedAt: null, finishedAt: null, eventId: null, error: null };
     goConnect();

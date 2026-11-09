@@ -694,7 +694,8 @@ async def collect_fdr(udid: str, timeout_s: float, stage: Stage) -> dict:
         except tarfile.TarError as e:
             raise EngineError("fdr_no_archive", short(e)) from e
         res["device_archive_removed"] = removed_remote
-        res["other_archives"] = [{"name": n, "date": archive_date(n)} for n in sorted(before)]
+        owned = _owned_by_pending(udid, skip_key=job.key)
+        res["other_archives"] = [{"name": n, "date": archive_date(n)} for n in sorted(before) if not owned(n)]
         await stage("cleaning")
         _rm_tmp(tmp)
         log.info("fdr: local temp folder removed: %s", not tmp.exists())
@@ -731,8 +732,28 @@ async def list_archives(udid: str) -> dict:
         raise
     except Exception as e:  # noqa: BLE001
         raise map_exception(e) from e
-    names = sorted(e for e in entries if final_archive_name(e) == e and _path(e) not in _claimed)
+    owned = _owned_by_pending(udid)
+    names = sorted(e for e in entries if final_archive_name(e) == e and _path(e) not in _claimed and not owned(e))
     return {"archives": [{"name": n, "date": archive_date(n)} for n in names]}
+
+
+def _owned_by_pending(udid: str, skip_key: Optional[str] = None) -> Callable[[str], bool]:
+    """Predicate: is this archive one a pending cleanup of this iPhone will delete on its own (a check that
+    was cancelled or failed)? Those are not "old diagnostics" to offer to the user."""
+    jobs = []
+    for e in _pending_load():
+        try:
+            job = _Job.from_json(e)
+        except ValueError:
+            continue
+        if job.udid == udid and job.key != skip_key:
+            jobs.append(job)
+
+    def owned(name: str) -> bool:
+        final = final_archive_name(name) or name
+        return any(_path(final) == j.own or (j.before is not None and final not in j.before
+                                             and in_window(final, j.window)) for j in jobs)
+    return owned
 
 
 async def delete_archives(udid: str, names: Iterable[Any]) -> dict:

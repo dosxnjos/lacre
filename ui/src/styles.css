@@ -378,6 +378,8 @@ button { font: inherit; color: inherit; }
 
 /* ------------------------------------------------------------- report */
 .export-note { margin-top: 14px; font-size: 14px; }
+/* On the results tab the delete note sits between the old-diagnostics card and the next block. */
+.results > [data-fk="archives-note"] { margin-bottom: 34px; }
 .note-ok { color: var(--ok); }
 .note-err { color: var(--alert); }
 .note-info { color: var(--ink-2); }

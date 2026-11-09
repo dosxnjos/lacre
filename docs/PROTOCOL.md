@@ -161,6 +161,8 @@ Campos extras (a interface pode ignorar o que não usar):
   `delete_archives` são cancelados na hora, para limpar antes de o casco encerrar o processo.
 - `RawFdr.other_archives`: `[{"name": str, "date": "YYYY-MM-DDTHH:MM:SS"|null}]`, os pacotes que já
   estavam no iPhone antes da conferência (data local tirada do nome). A interface pergunta antes de apagar.
+  A interface pede `list_archives` logo depois da leitura rápida (em segundo plano; erro só esconde o
+  cartão) e troca pela `other_archives` quando a conferência termina.
 - `delete_archives`: só aceita nomes simples de pacote (`sysdiagnose_*.tar.gz`, sem pasta); o resto vai
   para `failed`. Pacote que já não existe conta como apagado. Um pacote que uma conferência está baixando
   é recusado.

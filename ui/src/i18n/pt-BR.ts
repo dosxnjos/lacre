@@ -159,10 +159,10 @@ export const ptBR: Dict = {
     },
     archiveLeft: "O relatório desta conferência ainda está sendo apagado do iPhone. Deixe o Lacre aberto e o iPhone ligado por mais alguns minutos.",
     oldArchives: {
-      title: (n) => (n === 1 ? "O iPhone já tinha 1 diagnóstico antigo" : `O iPhone já tinha ${n} diagnósticos antigos`),
+      title: (n) => (n === 1 ? "Este iPhone tem 1 diagnóstico antigo guardado" : `Este iPhone tem ${n} diagnósticos antigos guardados`),
       text: (n) => (n === 1
-        ? "É um relatório de diagnóstico de antes desta conferência e não faz parte dela. O iOS apaga esses relatórios sozinho com o tempo. Se o dono do iPhone concordar, dá para apagar agora."
-        : "São relatórios de diagnóstico de antes desta conferência e não fazem parte dela. O iOS apaga esses relatórios sozinho com o tempo. Se o dono do iPhone concordar, dá para apagar agora."),
+        ? "É um relatório de diagnóstico gerado antes, por exemplo ao apertar sem querer os botões de volume e o lateral juntos. Não indica defeito, não faz parte desta conferência e o iOS apaga sozinho com o tempo. Se o dono do iPhone concordar, dá para apagar agora."
+        : "São relatórios de diagnóstico gerados antes, por exemplo ao apertar sem querer os botões de volume e o lateral juntos. Não indicam defeito, não fazem parte desta conferência e o iOS apaga sozinho com o tempo. Se o dono do iPhone concordar, dá para apagar agora."),
       listLabel: "Diagnósticos antigos no iPhone",
       created: (d) => `Gerado em ${d}`,
       undated: "Data não identificada",

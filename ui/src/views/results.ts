@@ -4,6 +4,7 @@ import { sealMark } from "../art";
 import { localizeModel } from "../models";
 import type { Ctx } from "../state";
 import type { Analysis, Section } from "../types";
+import { oldArchivesBlock } from "./archives";
 import { button, itemRow, list } from "./common";
 
 const stamped = new WeakSet<Analysis>();
@@ -111,6 +112,7 @@ export function resultsView({ s, act }: Ctx): HTMLElement {
     sectionBlock("factory", factory, s, sealLine),
     sectionBlock("parts", sectionById(a, "parts"), s),
     sectionBlock("battery", sectionById(a, "battery"), s),
+    oldArchivesBlock({ s, act }),
     deviceBlock(a, s),
     h("section", { class: "block next" },
       h("p", null, d.results.nextTests),

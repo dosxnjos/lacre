@@ -1,6 +1,6 @@
 import type { Backend } from "./backend";
 import type {
-  Analysis, CheckResult, Device, EngineError, FdrStage, Hello, Lang, Prereq, RawFdr, RawRead, ReadStep,
+  Analysis, CheckResult, Device, EngineError, FdrStage, Hello, Lang, OldArchive, Prereq, RawFdr, RawRead, ReadStep,
 } from "./types";
 
 export type Phase = "startup" | "engine_failed" | "prereq" | "connect" | "reading" | "results";
@@ -39,7 +39,11 @@ export interface State {
   showTech: boolean;
   demo: boolean;
   exportNote: Note | null;
-  /** Deleting the diagnostics that were already on the iPhone (factory tab). */
+  /** Old diagnostics on the connected iPhone (the only source for the card and the restart warning):
+   *  null = not known yet (or demo), [] = none. Listed after the quick read, replaced by the factory
+   *  check's `other_archives`, trimmed after a delete. */
+  oldArchives: OldArchive[] | null;
+  /** Deleting the old diagnostics (card on the results and factory tabs). */
   archives: { busy: boolean; note: Note | null };
 }
 
@@ -68,6 +72,7 @@ export function initialState(lang: Lang): State {
     showTech: false,
     demo: false,
     exportNote: null,
+    oldArchives: null,
     archives: { busy: false, note: null },
   };
 }

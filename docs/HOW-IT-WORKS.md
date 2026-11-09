@@ -81,7 +81,8 @@ How Lacre gets it:
    phone (it can happen while the cable keeps charging), Lacre shows "connection lost", waits for the
    phone to come back and resumes from the same byte. Any other archive that appeared during the check
    (buttons pressed twice) is deleted too. Archives that were already on the phone are listed, and
-   deleted only if you ask.
+   deleted only if you ask. That list does not need the factory check: Lacre reads it (read only)
+   right after the quick read and shows it on the results screen.
 
 What the report contains:
 

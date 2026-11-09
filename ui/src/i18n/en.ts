@@ -159,10 +159,10 @@ export const en: Dict = {
     },
     archiveLeft: "This check's report is still being deleted from the iPhone. Keep Seal Check open and the iPhone connected for a few more minutes.",
     oldArchives: {
-      title: (n) => (n === 1 ? "The iPhone already had 1 old diagnostic report" : `The iPhone already had ${n} old diagnostic reports`),
+      title: (n) => (n === 1 ? "This iPhone has 1 old diagnostic report stored" : `This iPhone has ${n} old diagnostic reports stored`),
       text: (n) => (n === 1
-        ? "It's from before this check and isn't part of it. iOS deletes these reports on its own over time. If the iPhone's owner agrees, you can delete it now."
-        : "They're from before this check and aren't part of it. iOS deletes these reports on its own over time. If the iPhone's owner agrees, you can delete them now."),
+        ? "It's a diagnostic report created earlier, for example by pressing the volume and side buttons together by accident. It doesn't mean anything is wrong, it isn't part of this check, and iOS deletes it on its own over time. If the iPhone's owner agrees, you can delete it now."
+        : "These are diagnostic reports created earlier, for example by pressing the volume and side buttons together by accident. They don't mean anything is wrong, they aren't part of this check, and iOS deletes them on its own over time. If the iPhone's owner agrees, you can delete them now."),
       listLabel: "Old diagnostic reports on the iPhone",
       created: (d) => `Created ${d}`,
       undated: "Date unknown",

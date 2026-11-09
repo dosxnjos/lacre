@@ -1,8 +1,9 @@
 import { h, svg } from "../dom";
-import { formatDate, formatSealDate, msg, t } from "../i18n";
+import { formatSealDate, msg, t } from "../i18n";
 import { buttonsArt, icons } from "../art";
 import type { Ctx } from "../state";
-import { FDR_STAGES, progressStage, type OldArchive } from "../types";
+import { FDR_STAGES, progressStage } from "../types";
+import { oldArchivesBlock } from "./archives";
 import { button, errorBox, itemRow, list } from "./common";
 import { sectionById } from "./results";
 
@@ -66,39 +67,6 @@ export function lostNotice(openFactory?: () => void): HTMLElement {
   );
 }
 
-/** Archive date "YYYY-MM-DDTHH:MM:SS" (local time, from the archive name) in the current language. */
-function archiveDate(a: OldArchive): string {
-  const o = t().fdr.oldArchives;
-  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/.exec(a.date ?? "");
-  if (!m) return o.undated;
-  const dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6]));
-  return Number.isNaN(dt.getTime()) ? o.undated : o.created(formatDate(dt, true));
-}
-
-/** Diagnostics that were already on the iPhone before the check: listed, deleted only if the user asks. */
-function oldArchivesCard({ s, act }: Ctx): HTMLElement | null {
-  const archives = s.rawFdr?.other_archives ?? [];
-  if (s.demo || !s.device || !archives.length) return null;
-  const o = t().fdr.oldArchives;
-  const n = archives.length;
-  const busy = s.archives.busy;
-  return h("section", { class: "block old-archives", "aria-labelledby": "old-archives-title" },
-    h("h2", { class: "block-title", id: "old-archives-title" }, o.title(n)),
-    h("p", { class: "block-note" }, o.text(n)),
-    h("ul", { class: "list archive-list", "aria-label": o.listLabel },
-      archives.map((a) => h("li", null,
-        h("span", null, archiveDate(a)),
-        s.showTech ? h("span", { class: "mono small" }, a.name) : null))),
-    h("div", { class: "actions" },
-      // Stays focusable while busy (aria-disabled, not disabled): the action ignores clicks meanwhile.
-      h("button", {
-        type: "button", class: "btn btn-secondary", "data-fk": "delete-archives",
-        "aria-disabled": busy ? "true" : null, "aria-busy": busy ? "true" : null,
-        onclick: act.deleteOldArchives as EventListener,
-      }, busy ? o.busy : o.button(n))),
-  );
-}
-
 export function factoryView({ s, act }: Ctx): HTMLElement {
   const d = t().fdr;
   const f = s.fdr;
@@ -125,7 +93,6 @@ export function factoryView({ s, act }: Ctx): HTMLElement {
 
   if (f.status === "done" && s.analysis) {
     const sec = sectionById(s.analysis, "factory");
-    const note = s.archives.note;
     return h("div", { class: "factory" },
       head,
       h("section", { class: "block" },
@@ -141,9 +108,7 @@ export function factoryView({ s, act }: Ctx): HTMLElement {
       !s.demo && s.rawFdr?.device_archive_removed === false
         ? h("div", { class: "callout callout-info", role: "status" }, svg(icons.trash, "fact-icon"), h("p", null, d.archiveLeft))
         : null,
-      oldArchivesCard({ s, act }),
-      // Outside the card: the card disappears once every old diagnostic is deleted, the note stays.
-      note ? h("p", { class: `export-note note-${note.kind}`, role: "status", tabindex: "-1", "data-fk": "archives-note" }, note.text) : null,
+      oldArchivesBlock({ s, act }),
       s.demo ? null : h("div", { class: "actions" }, button(d.redo, act.startFdr, "quiet", s.archives.busy ? { disabled: "" } : {})),
     );
   }

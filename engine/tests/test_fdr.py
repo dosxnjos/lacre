@@ -667,3 +667,13 @@ def test_list_archives_shows_only_finished_ones(fake_device, workdir):
     assert res == {"archives": [{"name": OLD, "date": "2026-11-01T10:00:00"},
                                 {"name": synced, "date": "2026-11-09T03:21:03"}]}
     assert FakeManager.afc.removed == []  # listing never deletes
+
+
+def test_list_archives_hides_what_a_pending_cleanup_will_delete(fake_device, workdir):
+    left = stamped(-120, "cancelled-check")
+    FakeManager.afc = FakeAfc(None, existing={OLD: b"a", left: b"from a cancelled check"}, press_at=None)
+    t0 = time.time() - 300
+    F._save(F._Job("k1", "UDID", frozenset({OLD}), (t0, t0 + 900)))
+    F._save(F._Job("k2", "OTHER-IPHONE", frozenset(), (t0, t0 + 900)))
+    res = asyncio.run(F.list_archives("UDID"))
+    assert [a["name"] for a in res["archives"]] == [OLD]  # the cleanup deletes the other one by itself

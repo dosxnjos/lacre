@@ -86,6 +86,8 @@ export interface RawFdr {
 /** `date` is local "YYYY-MM-DDTHH:MM:SS" parsed from the archive name, or null. */
 export interface OldArchive { name: string; date: string | null }
 export interface DeleteArchivesResult { deleted: string[]; failed: string[] }
+/** `list_archives`: the finished archives on the iPhone right now (read only). */
+export interface ListArchivesResult { archives: OldArchive[] }
 
 export interface Item { code: ItemCode; status: Status; params: Params }
 
