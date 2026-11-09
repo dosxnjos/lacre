@@ -1,2 +1,2 @@
 """Lacre (Seal Check) engine: read-only checks of a used iPhone over USB."""
-__version__ = "0.2.2"
+__version__ = "0.2.3"

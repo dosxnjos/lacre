@@ -74,10 +74,26 @@ never opened. Read this list before buying.
 
 - **Windows** needs Apple's free **Apple Devices** app (Microsoft Store) or iTunes, which provides
   the USB service. Lacre detects when it is missing.
-- **macOS** works natively. Release builds are for Apple silicon only; Intel Macs must build from
-  source. Installers are not code-signed or notarized yet (Windows SmartScreen and macOS Gatekeeper
-  will warn on first launch).
-- **Linux** has no installer yet; build from source and run `usbmuxd`.
+  A portable zip (no installer) is also built; it keeps its settings and logs in the user's AppData
+  folder like the installed app.
+  Because the build is unsigned, Windows can block it with no "Run anyway" option: Smart App
+  Control (on by default on some new Windows 11 PCs) blocks unsigned apps outright, and Microsoft
+  Defender may flag the PyInstaller engine as a threat. The portable zip may be blocked the same
+  way. Turning Smart App Control off is the user's decision, and on Windows 11 it cannot be turned
+  back on without reinstalling Windows. A signed build, planned, should remove these blocks.
+  Windows on ARM (Snapdragon and similar) is untested and may not work, since the USB connection
+  depends on Apple's driver.
+- **macOS** works natively. Release builds exist for Apple silicon (macOS 11 or newer) and for
+  Intel Macs (macOS 10.15 or newer). The Intel build has not been tested on a real Intel Mac yet.
+  Both are built on recent macOS runners; CI fails the build if any binary in the bundled engine
+  declares a newer minimum macOS than these, but reports from older Macs are welcome.
+- Installers are not code-signed with a developer certificate or notarized yet (Windows SmartScreen
+  and macOS Gatekeeper will warn on first launch). The Mac app carries only an ad-hoc signature.
+- **Linux** has AppImage and `.deb` builds, not yet tested with a real iPhone. Both are x86-64 only
+  (no ARM build) and are built on Ubuntu 22.04, so they need glibc 2.35 or newer (Ubuntu 22.04,
+  Debian 12, Fedora 36 or later). They need the `usbmuxd` service running (the `.deb` depends on
+  it); the AppImage also needs FUSE 2 (`libfuse2`). CI only checks that the engine inside each
+  package starts and answers.
 - USB only. Wi-Fi connections are ignored on purpose.
 - A charge-only cable, a loose connector or a front-panel/hub port can show up as "unknown USB
   device". Try another cable or a rear port before blaming the phone.

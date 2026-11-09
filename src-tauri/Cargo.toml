@@ -1,6 +1,6 @@
 [package]
 name = "lacre"
-version = "0.2.2"
+version = "0.2.3"
 description = "Lacre (Seal Check): check a used iPhone before you buy it"
 authors = ["dosxnjos"]
 license = "MIT"

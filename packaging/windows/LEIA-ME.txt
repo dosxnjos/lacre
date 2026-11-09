@@ -1,0 +1,61 @@
+LACRE (versão portátil para Windows)
+
+Esta pasta é o Lacre completo. Não precisa instalar.
+
+1. Instale antes o app gratuito "Apple Devices" (Dispositivos Apple), da Microsoft Store:
+   https://apps.microsoft.com/detail/9np83lwlpz9k
+   É ele que faz a conexão USB com o iPhone.
+2. Dê dois cliques em Lacre.exe.
+3. Se o Windows mostrar "O Windows protegeu o computador", clique em
+   "Mais informações" e depois em "Executar assim mesmo".
+   O aviso aparece porque o app ainda não tem assinatura digital.
+4. Se não aparecer "Executar assim mesmo", o Windows está bloqueando de vez.
+   Pode ser o Controle Inteligente de Aplicativos, que vem ligado em alguns
+   computadores novos com Windows 11. Para conferir, abra Segurança do Windows >
+   Controle de aplicativos e do navegador > Configurações do Controle Inteligente
+   de Aplicativos. Desligar é decisão sua, mas no Windows 11, depois de desligado,
+   ele não pode ser ligado de novo sem reinstalar o Windows. Se preferir não mexer
+   nisso, use o Lacre em outro computador.
+   Também pode ser o Microsoft Defender tratando o programa sem assinatura como
+   ameaça. Não desligue o antivírus. Liberar o Lacre no Histórico de proteção é
+   decisão sua.
+   Uma versão com assinatura digital, que deve acabar com esses bloqueios, está
+   nos planos.
+
+Se o Lacre não abrir, o computador pode estar sem o Microsoft Edge WebView2
+(já vem no Windows 11). Baixe em: https://developer.microsoft.com/microsoft-edge/webview2/
+
+Mantenha o Lacre.exe e a pasta "engine" juntos, na mesma pasta.
+Você pode guardar esta pasta onde quiser, inclusive num pendrive.
+
+Como usar e o que o Lacre confere: https://github.com/dosxnjos/lacre
+
+
+LACRE (portable version for Windows)
+
+This folder is the whole Lacre app. Nothing to install.
+
+1. First install Apple's free "Apple Devices" app from the Microsoft Store:
+   https://apps.microsoft.com/detail/9np83lwlpz9k
+   It provides the USB connection to the iPhone.
+2. Double-click Lacre.exe.
+3. If Windows says "Windows protected your PC", click "More info" and then "Run anyway".
+   The warning shows because the app is not code-signed yet.
+4. If there is no "Run anyway" option, Windows is blocking it outright.
+   It may be Smart App Control, which is on by default on some new Windows 11
+   computers. To check, open Windows Security > App & browser control >
+   Smart App Control settings. Turning it off is your decision, but on Windows 11,
+   once it is off, it cannot be turned back on without reinstalling Windows.
+   If you would rather not touch it, use Lacre on another computer.
+   It may also be Microsoft Defender treating the unsigned app as a threat.
+   Do not turn off your antivirus. Allowing Lacre in Protection history is your
+   decision.
+   A digitally signed version, which should end these blocks, is planned.
+
+If Lacre does not open, the computer may be missing Microsoft Edge WebView2
+(built into Windows 11). Get it at: https://developer.microsoft.com/microsoft-edge/webview2/
+
+Keep Lacre.exe and the "engine" folder together, in the same folder.
+You can keep this folder anywhere, even on a USB stick.
+
+How to use it and what Lacre checks: https://github.com/dosxnjos/lacre

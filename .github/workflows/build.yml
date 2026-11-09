@@ -1,5 +1,16 @@
-# Builds the Lacre installers on Windows and macOS and attaches them to a draft GitHub release.
-# Runs on version tags (v1.2.3) and manually from the Actions tab.
+# Builds Lacre on Windows, macOS (Apple silicon and Intel) and Linux and attaches the files to the
+# GitHub release of the same version. Runs on version tags (v1.2.3) and manually from the Actions tab.
+#
+# Jobs:
+#   release  resolves the tag (v + version in tauri.conf.json; a pushed tag must match it) and creates
+#            the draft release once, or reuses the one that already exists for that tag.
+#   build    one job per platform, all uploading to that single release (no duplicate drafts).
+#   verify   checks that the release has all six fixed-name files. It never publishes the release.
+#
+# Besides Tauri's own versioned files, each build uploads copies with FIXED names, so a page can link
+# https://github.com/dosxnjos/lacre/releases/latest/download/<name> and never go stale:
+#   Lacre-Windows-Instalador.exe, Lacre-Windows-Portatil.zip, Lacre-Mac-AppleSilicon.dmg,
+#   Lacre-Mac-Intel.dmg, Lacre-Linux.AppImage, Lacre-Linux.deb
 name: build
 
 on:
@@ -16,12 +27,103 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  release:
+    name: release (create or reuse draft)
+    runs-on: ubuntu-latest
+    # A tag push and a manual run on main have different refs; this keeps them from creating the
+    # same draft at the same moment.
+    concurrency:
+      group: lacre-release-create
+      cancel-in-progress: false
+    outputs:
+      version: ${{ steps.tag.outputs.version }}
+      tag: ${{ steps.tag.outputs.tag }}
+      release_id: ${{ steps.release.outputs.id }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The release tag is always v + the version in tauri.conf.json (tauri-action names the files
+      # after that version). A pushed tag that does not match would mix versions, so it stops here.
+      - name: Resolve release tag
+        id: tag
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version=$(jq -r .version src-tauri/tauri.conf.json)
+          if [ -z "$version" ] || [ "$version" = "null" ]; then
+            echo "::error::no version in src-tauri/tauri.conf.json"
+            exit 1
+          fi
+          tag="v$version"
+          if [ "$REF_TYPE" = "tag" ] && [ "$REF_NAME" != "$tag" ]; then
+            echo "::error::pushed tag $REF_NAME does not match the app version $tag (src-tauri/tauri.conf.json). Bump the version or push $tag."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "release tag: $tag"
+
+      # Reuses the release if it already exists (the owner sometimes creates it before pushing the
+      # tag); otherwise creates a draft. --json databaseId is the numeric id tauri-action expects.
+      - name: Create or reuse the draft release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          view() { gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json databaseId,isDraft -q '"\(.databaseId) \(.isDraft)"' 2>/dev/null; }
+          if info=$(view); then
+            echo "reusing existing release $TAG ($info)"
+          else
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" \
+              --draft \
+              --title "Lacre $TAG" \
+              --notes "See the README for how to install and use Lacre. Windows also needs Apple's free Apple Devices app (Microsoft Store)." \
+              --target "$GITHUB_SHA"
+            info=""
+            for i in $(seq 1 6); do
+              if info=$(view); then break; fi
+              echo "new release $TAG not visible yet, waiting ($i/6)"
+              sleep 10
+            done
+          fi
+          id=${info%% *}
+          draft=${info##* }
+          if [ -z "$id" ]; then echo "::error::could not find or create release $TAG"; exit 1; fi
+          if [ "$draft" != "true" ]; then
+            echo "::warning::release $TAG is already published; files will be added to it"
+          fi
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
   build:
-    name: build (${{ matrix.os }})
+    name: build (${{ matrix.platform }})
+    needs: release
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            platform: windows
+            args: ""
+          - os: macos-latest
+            platform: mac-arm
+            args: ""
+          # PyInstaller cannot cross-compile, so the Intel build needs an Intel runner.
+          # macos-13 was retired on 4 Dec 2025; macos-15-intel is the x64 macOS 15 image.
+          - os: macos-15-intel
+            platform: mac-intel
+            args: ""
+          # tauri.conf.json keeps "targets": "all"; on Linux only the deb and the AppImage are built.
+          - os: ubuntu-22.04
+            platform: linux
+            args: "--bundles deb,appimage"
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -30,6 +132,33 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Tauri v2 system dependencies (https://v2.tauri.app/start/prerequisites/ and tauri-action's
+      # ubuntu-22.04 list).
+      - name: Install Linux build dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev
+
+      # On Linux the engine is frozen with the runner's shared-library CPython (libpython3.12.so),
+      # which PyInstaller expects; uv is told to use it below (UV_PYTHON_PREFERENCE=only-system).
+      # Windows and macOS keep uv's own Python.
+      - name: Set up Python 3.12 (Linux)
+        if: matrix.platform == 'linux'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Set up uv and Python 3.12
         uses: astral-sh/setup-uv@v6
@@ -49,11 +178,75 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri -> target
+          # Both macOS jobs report RUNNER_OS=macOS; keep their caches apart.
+          key: ${{ matrix.platform }}
 
       # Freezes the Python engine (pymobiledevice3==11.50.2) with PyInstaller in onedir mode
       # into engine/dist/lacre-engine/, which Tauri bundles as a resource.
+      # --locked: a stale engine/uv.lock fails instead of being re-resolved.
+      # --no-build-package cryptography: it must come from a prebuilt wheel. On the Intel Mac the lock
+      # pins 48.0.1 (the last release with an Intel macOS wheel); building it from source there would
+      # link the runner's OpenSSL, made for a newer macOS than the app supports.
       - name: Build engine (PyInstaller onedir)
-        run: uv run --project engine --with pyinstaller python engine/build.py
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          UV_PYTHON_PREFERENCE: ${{ matrix.platform == 'linux' && 'only-system' || 'managed' }}
+        run: |
+          set -euo pipefail
+          uvr() { uv run --locked --project engine --no-build-package cryptography "$@"; }
+          uvr python -c "import sys, sysconfig, cryptography; print(sys.executable, sys.version.split()[0], 'Py_ENABLE_SHARED =', sysconfig.get_config_var('Py_ENABLE_SHARED'), 'cryptography', cryptography.__version__)"
+          if [ "$PLATFORM" = "linux" ]; then
+            uvr python -c "import sys, sysconfig; sys.exit(0 if sysconfig.get_config_var('Py_ENABLE_SHARED') else 'this Python has no shared libpython; PyInstaller needs one')"
+          fi
+          uvr --with pyinstaller python engine/build.py
+
+      # Every Mach-O file in the frozen engine (Python, libpython, extension modules, OpenSSL, the
+      # PyInstaller bootloader) must have a slice for this Mac's architecture and must not declare a
+      # newer minimum macOS than the app supports: 10.15 on Intel, 11.0 on Apple silicon.
+      - name: Check minimum macOS of the engine binaries
+        if: matrix.platform == 'mac-arm' || matrix.platform == 'mac-intel'
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -euo pipefail
+          if [ "$PLATFORM" = "mac-intel" ]; then arch=x86_64; max=10.15; else arch=arm64; max=11.0; fi
+          # 1 when version $1 is greater than version $2 (compares up to three numeric parts).
+          newer() {
+            awk -v a="$1" -v b="$2" 'BEGIN {
+              na = split(a, x, "."); nb = split(b, y, ".")
+              for (i = 1; i <= 3; i++) {
+                p = (i <= na) ? x[i] + 0 : 0; q = (i <= nb) ? y[i] + 0 : 0
+                if (p > q) { print 1; exit }
+                if (p < q) { print 0; exit }
+              }
+              print 0
+            }'
+          }
+          scanned=0
+          bad=0
+          while IFS= read -r -d '' f; do
+            # No "cmd | grep -q" here: with pipefail an early grep exit can turn into a false result.
+            case "$(file -b "$f")" in *Mach-O*) ;; *) continue ;; esac
+            scanned=$((scanned + 1))
+            archs=$(lipo -archs "$f" 2>/dev/null || echo unknown)
+            case " $archs " in
+              *" $arch "*) ;;
+              *) echo "::error::$f has no $arch slice ($archs)"; bad=1; continue ;;
+            esac
+            mins=$(otool -arch "$arch" -l "$f" | awk '
+              /^ *cmd / { b = ($2 == "LC_BUILD_VERSION"); m = ($2 == "LC_VERSION_MIN_MACOSX"); next }
+              b && $1 == "minos" { print $2 }
+              m && $1 == "version" { print $2 }')
+            for v in $mins; do
+              if [ "$(newer "$v" "$max")" = "1" ]; then
+                echo "::error::$f requires macOS $v (limit for $PLATFORM is $max)"
+                bad=1
+              fi
+            done
+          done < <(find engine/dist/lacre-engine -type f -print0)
+          echo "Mach-O files checked: $scanned (arch $arch, limit macOS $max)"
+          if [ "$scanned" -eq 0 ]; then echo "::error::no Mach-O files found in engine/dist/lacre-engine"; exit 1; fi
+          exit "$bad"
 
       # The frozen engine must answer "hello" (no iPhone needed on the runner).
       - name: Smoke test frozen engine
@@ -71,14 +264,153 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
-      - name: Build app and attach installers to a draft release
+      # Uploads Tauri's versioned files to the release made by the release job (releaseId), so the
+      # four builds never create a draft each.
+      - name: Build app and attach installers to the release
+        id: tauri
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The PyInstaller engine carries its archive appended to the executable; stripping it
+          # during the AppImage step would break it. Only read by the Linux AppImage bundler.
+          NO_STRIP: "true"
         with:
           tauriScript: npm run tauri
-          tagName: v__VERSION__
-          releaseName: "Lacre v__VERSION__"
-          releaseBody: "See the README for how to install and use Lacre. Windows also needs Apple's free Apple Devices app (Microsoft Store)."
-          releaseDraft: true
-          prerelease: false
+          args: ${{ matrix.args }}
+          releaseId: ${{ needs.release.outputs.release_id }}
+
+      - name: Copy files to fixed names
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -euo pipefail
+          b=src-tauri/target/release/bundle
+          rm -rf stable && mkdir -p stable
+          shopt -s nullglob
+          # one <fixed name> <files matching a glob of this version>: exactly one match is required.
+          one() {
+            local name=$1
+            shift
+            if [ "$#" -ne 1 ]; then
+              echo "expected exactly one file for $name, found $#: $*"
+              ls -laR "$b" || true
+              exit 1
+            fi
+            cp "$1" "stable/$name"
+            echo "$1 -> stable/$name"
+          }
+          case "$PLATFORM" in
+            windows)   one Lacre-Windows-Instalador.exe "$b"/nsis/Lacre_"$VERSION"_x64-setup.exe ;;
+            mac-arm)   one Lacre-Mac-AppleSilicon.dmg "$b"/dmg/Lacre_"$VERSION"_aarch64.dmg ;;
+            mac-intel) one Lacre-Mac-Intel.dmg "$b"/dmg/Lacre_"$VERSION"_x64.dmg ;;
+            linux)
+              one Lacre-Linux.AppImage "$b"/appimage/*"$VERSION"*.AppImage
+              one Lacre-Linux.deb "$b"/deb/*"$VERSION"*.deb
+              ;;
+            *) echo "unknown platform $PLATFORM"; exit 1 ;;
+          esac
+
+      # Portable Windows app: Lacre/Lacre.exe + Lacre/engine/ + Lacre/LEIA-ME.txt. The shell resolves
+      # its resource folder to the exe's own folder on Windows, so no installer is needed.
+      # The engine comes from engine/dist (the folder smoke-tested above and bundled by Tauri).
+      - name: Make Windows portable zip
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = 'portable/Lacre'
+          if (Test-Path portable) { Remove-Item -Recurse -Force portable }
+          New-Item -ItemType Directory -Force $root | Out-Null
+          Copy-Item src-tauri/target/release/lacre.exe "$root/Lacre.exe"
+          Copy-Item -Recurse engine/dist/lacre-engine "$root/engine"
+          Copy-Item packaging/windows/LEIA-ME.txt "$root/LEIA-ME.txt"
+          foreach ($p in @("$root/Lacre.exe", "$root/engine/lacre-engine.exe", "$root/engine/_internal")) {
+            if (-not (Test-Path $p)) { throw "portable build is missing $p" }
+          }
+          Compress-Archive -Path $root -DestinationPath stable/Lacre-Windows-Portatil.zip -CompressionLevel Optimal
+          Get-Item stable/Lacre-Windows-Portatil.zip | Format-List Name, Length
+
+      # Linux packaging (linuxdeploy for the AppImage) can damage the bundled PyInstaller engine:
+      # unpack both packages and run the same hello check on the engine inside each one.
+      - name: Check the engine inside the Linux packages
+        if: matrix.platform == 'linux'
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          check() {
+            local exe
+            exe=$(find "$1" -type f -path '*/engine/lacre-engine' | head -n 1)
+            if [ -z "$exe" ]; then echo "no engine/lacre-engine inside $1"; exit 1; fi
+            if [ ! -x "$exe" ]; then echo "$exe is not executable"; exit 1; fi
+            echo "engine: $exe"
+            out=$(printf '%s\n%s\n' \
+              '{"v":1,"id":"ci","cmd":"hello","args":{}}' \
+              '{"v":1,"id":"bye","cmd":"shutdown","args":{}}' | "$exe")
+            echo "$out"
+            echo "$out" | grep '"id": *"ci"' | grep -q '"ok": *true'
+          }
+          rm -rf pkgcheck && mkdir -p pkgcheck/deb pkgcheck/appimage
+          dpkg-deb -x stable/Lacre-Linux.deb pkgcheck/deb
+          check pkgcheck/deb
+          chmod +x stable/Lacre-Linux.AppImage
+          app="$PWD/stable/Lacre-Linux.AppImage"
+          (cd pkgcheck/appimage && "$app" --appimage-extract > /dev/null)
+          check pkgcheck/appimage/squashfs-root
+
+      # The release job made the release; --clobber replaces the copies from an earlier run of this tag.
+      - name: Upload files with fixed names to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          ls -la stable
+          for i in 1 2 3; do
+            if gh release upload "$TAG" stable/* --clobber -R "$GITHUB_REPOSITORY"; then exit 0; fi
+            echo "upload failed, retrying ($i/3)"
+            sleep 15
+          done
+          exit 1
+
+  # Runs even when a build failed, so the summary always says which fixed-name files are missing.
+  # It only checks; publishing the draft stays a manual step.
+  verify:
+    name: verify release files
+    needs: [release, build]
+    if: always() && needs.release.result == 'success'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check the six fixed-name files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          names=$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json assets -q '.assets[].name')
+          echo "assets on $TAG:"
+          echo "$names"
+          missing=0
+          for n in \
+            Lacre-Windows-Instalador.exe \
+            Lacre-Windows-Portatil.zip \
+            Lacre-Mac-AppleSilicon.dmg \
+            Lacre-Mac-Intel.dmg \
+            Lacre-Linux.AppImage \
+            Lacre-Linux.deb; do
+            if grep -qxF "$n" <<< "$names"; then
+              echo "ok      $n"
+            else
+              echo "::error::release $TAG is missing $n"
+              missing=1
+            fi
+          done
+          # Informational: a leftover duplicate draft for this tag (from older runs) is only a warning.
+          drafts=$(gh release list -R "$GITHUB_REPOSITORY" --limit 100 --json tagName -q "[.[] | select(.tagName == \"$TAG\")] | length" 2>/dev/null) || drafts=0
+          if [ "${drafts:-0}" -gt 1 ]; then
+            echo "::warning::there are $drafts releases for $TAG; delete the extra drafts before publishing"
+          fi
+          exit "$missing"

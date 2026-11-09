@@ -1,7 +1,7 @@
 {
   "name": "lacre",
   "private": true,
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Seal Check: check a used iPhone before you buy it (desktop app).",
   "license": "MIT",
   "type": "module",

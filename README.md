@@ -1,7 +1,7 @@
 # Lacre (Seal Check)
 
-**Check a used iPhone before you pay for it.** Lacre is a free, open-source desktop app for Windows
-and macOS. You plug the phone into your computer with a USB cable and it tells you, in plain
+**Check a used iPhone before you pay for it.** Lacre is a free, open-source desktop app for Windows,
+macOS and Linux. You plug the phone into your computer with a USB cable and it tells you, in plain
 language, whether the phone is locked to someone else, managed by a company, or has parts that
 don't match what Apple recorded at the factory.
 
@@ -11,16 +11,44 @@ don't match what Apple recorded at the factory.
 
 ## Download
 
-Get the installer for your system from the
-[Releases page](https://github.com/dosxnjos/lacre/releases):
+Direct links to the latest version (all files are also on the
+[Releases page](https://github.com/dosxnjos/lacre/releases)):
 
-- **Windows 10/11:** `.msi` or `.exe` installer. Also install Apple's free
+| System | Download |
+| --- | --- |
+| Windows 10/11 | [Installer](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Windows-Instalador.exe) or [portable zip](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Windows-Portatil.zip) |
+| Mac with Apple silicon (M1 and later) | [Lacre-Mac-AppleSilicon.dmg](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Mac-AppleSilicon.dmg) |
+| Mac with Intel | [Lacre-Mac-Intel.dmg](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Mac-Intel.dmg) |
+| Linux (x86-64) | [AppImage](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Linux.AppImage) or [.deb](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Linux.deb) (Debian, Ubuntu) |
+
+- **Windows:** first install Apple's free
   [Apple Devices](https://apps.microsoft.com/detail/9np83lwlpz9k) app from the Microsoft Store
   (it provides the USB connection to the iPhone). Lacre tells you if it is missing.
-  The installer is not code-signed yet: if SmartScreen says "Windows protected your PC", click
-  **More info → Run anyway**.
-- **macOS (Apple silicon):** `.dmg`. Nothing else to install. The app is not notarized yet: the
-  first time, right-click the app → **Open** → **Open**. Intel Macs: build from source.
+  Then run the installer, or unzip the portable zip anywhere and double-click `Lacre.exe` inside the
+  `Lacre` folder (no installation; keep `Lacre.exe` and the `engine` folder together).
+  Lacre is not code-signed yet: if SmartScreen says "Windows protected your PC", click
+  **More info > Run anyway**. An `.msi` installer is also on the Releases page.
+  If there is no "Run anyway" button, Windows is blocking it outright: either Smart App Control
+  (on by default on some new Windows 11 PCs; check **Windows Security > App & browser control >
+  Smart App Control settings**) or Microsoft Defender flagging the unsigned build. The portable zip
+  may be blocked the same way. Turning Smart App Control off is your decision, but on Windows 11 it
+  cannot be turned back on without reinstalling Windows; using another computer is the safer
+  choice. A signed build, which should end these blocks, is planned.
+- **macOS:** open the `.dmg` and drag Lacre to Applications. Nothing else to install. The app is
+  not notarized yet, so the first launch is blocked with a message saying Lacre "Not Opened" or
+  "cannot be opened". Click **Done** or **Cancel** (never Move to Trash), then open **System Settings > Privacy &
+  Security**, scroll down and click **Open Anyway** next to Lacre, enter your password and click
+  **Open Anyway** again when asked. (Right-click > Open no longer works on recent macOS.)
+  Only if macOS says Lacre "is damaged and can't be opened", and as a last resort, run this in
+  Terminal and open it again: `xattr -cr /Applications/Lacre.app` (it removes the downloaded-file
+  mark from Lacre only).
+  Not sure which Mac you have? Apple menu > **About This Mac**: "Chip Apple M…" is Apple silicon,
+  "Processor Intel" is Intel. The Intel build is new and has not been tested on a real Intel Mac yet.
+- **Linux:** install the USB service first (`sudo apt install usbmuxd` on Debian/Ubuntu). The `.deb`
+  installs it for you (`sudo apt install ./Lacre-Linux.deb`). The AppImage works on most distributions: make it
+  executable (`chmod +x Lacre-Linux.AppImage`) and open it; if it does not start, install FUSE 2
+  (`libfuse2`, or `libfuse2t64` on Ubuntu 24.04). The Linux builds are new and have not been tested
+  with a real iPhone yet.
 
 ## How to use it (5 steps)
 
@@ -73,7 +101,7 @@ Everything is explained in [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md). What La
 | --- | --- |
 | Windows 10/11 | Apple's free **Apple Devices** app (Microsoft Store), which runs the USB service. iTunes also works. |
 | macOS | Nothing: the USB service is built in. |
-| Linux | No installer yet; build from source and run `usbmuxd`. |
+| Linux | The `usbmuxd` USB service (the `.deb` installs it). The AppImage also needs FUSE 2. |
 
 The iPhone needs to be unlocked and trusted. The factory check works on recent iOS versions,
 including iOS 17.4 and later.
@@ -116,8 +144,12 @@ npm install
 npm run dev
 ```
 
-Releases are built by GitHub Actions on Windows and macOS when a `v*` tag is pushed
-([.github/workflows/build.yml](.github/workflows/build.yml)).
+Releases are built by GitHub Actions on Windows, macOS (Apple silicon and Intel) and Linux when a
+`v*` tag is pushed ([.github/workflows/build.yml](.github/workflows/build.yml)). Each job also
+uploads a copy with a fixed name (`Lacre-Windows-Instalador.exe`, `Lacre-Windows-Portatil.zip`,
+`Lacre-Mac-AppleSilicon.dmg`, `Lacre-Mac-Intel.dmg`, `Lacre-Linux.AppImage`, `Lacre-Linux.deb`), so
+`releases/latest/download/<name>` links always point to the newest published release. On Linux the
+workflow unpacks the `.deb` and the AppImage and checks that the bundled engine still answers.
 
 ### Contributing
 

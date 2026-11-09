@@ -1,7 +1,7 @@
 # Lacre
 
 **Confira um iPhone usado antes de pagar por ele.** O Lacre é um app gratuito e de código aberto
-para Windows e macOS. Você liga o celular no computador com um cabo USB e ele diz, em linguagem
+para Windows, macOS e Linux. Você liga o celular no computador com um cabo USB e ele diz, em linguagem
 simples, se o aparelho está preso à conta de outra pessoa, se é gerenciado por uma empresa ou se tem
 peças que não batem com o que a Apple registrou na fábrica.
 
@@ -11,17 +11,49 @@ peças que não batem com o que a Apple registrou na fábrica.
 
 ## Baixar
 
-Baixe o instalador do seu sistema na
-[página de Releases](https://github.com/dosxnjos/lacre/releases):
+Links diretos para a versão mais recente (todos os arquivos também estão na
+[página de Releases](https://github.com/dosxnjos/lacre/releases)):
 
-- **Windows 10/11:** instalador `.msi` ou `.exe`. Instale também o app gratuito
+| Sistema | Baixar |
+| --- | --- |
+| Windows 10/11 | [Instalador](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Windows-Instalador.exe) ou [versão portátil (zip)](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Windows-Portatil.zip) |
+| Mac com Apple silicon (M1 em diante) | [Lacre-Mac-AppleSilicon.dmg](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Mac-AppleSilicon.dmg) |
+| Mac com Intel | [Lacre-Mac-Intel.dmg](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Mac-Intel.dmg) |
+| Linux (x86-64) | [AppImage](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Linux.AppImage) ou [.deb](https://github.com/dosxnjos/lacre/releases/latest/download/Lacre-Linux.deb) (Debian, Ubuntu) |
+
+- **Windows:** instale antes o app gratuito
   [Apple Devices](https://apps.microsoft.com/detail/9np83lwlpz9k), da Microsoft Store (é ele que faz
   a conexão USB com o iPhone). O Lacre avisa se estiver faltando.
-  O instalador ainda não tem assinatura digital: se o SmartScreen disser "O Windows protegeu o
-  computador", clique em **Mais informações → Executar assim mesmo**.
-- **macOS (Apple silicon):** `.dmg`. Não precisa de mais nada. O app ainda não é notarizado: na
-  primeira vez, clique com o botão direito no app → **Abrir** → **Abrir**. Mac com Intel: compile a
-  partir do código.
+  Depois rode o instalador, ou descompacte o zip portátil onde quiser e dê dois cliques no
+  `Lacre.exe` dentro da pasta `Lacre` (sem instalação; mantenha o `Lacre.exe` e a pasta `engine`
+  juntos). O Lacre ainda não tem assinatura digital: se o SmartScreen disser "O Windows protegeu o
+  computador", clique em **Mais informações > Executar assim mesmo**. Também há um instalador `.msi`
+  na página de Releases.
+  Se não aparecer o botão "Executar assim mesmo", o Windows está bloqueando de vez: ou é o Controle
+  Inteligente de Aplicativos (vem ligado em alguns computadores novos com Windows 11; confira em
+  **Segurança do Windows > Controle de aplicativos e do navegador > Configurações do Controle
+  Inteligente de Aplicativos**), ou é o Microsoft Defender tratando o programa sem assinatura como
+  ameaça. A versão portátil pode ser bloqueada do mesmo jeito. Desligar o Controle Inteligente de
+  Aplicativos é decisão sua, mas no Windows 11 ele não pode ser ligado de novo sem reinstalar o
+  Windows; usar outro computador é o caminho mais seguro. Uma versão com assinatura digital, que deve
+  acabar com esses bloqueios, está nos planos.
+- **macOS:** abra o `.dmg` e arraste o Lacre para Aplicativos. Não precisa de mais nada. O app ainda
+  não é notarizado, então na primeira vez o Mac bloqueia com um aviso dizendo que o Lacre "não foi
+  aberto" ou "não pode ser aberto". Clique em **OK** ou **Cancelar** (nunca em Mover para o Lixo), abra **Ajustes do
+  Sistema > Privacidade e Segurança**, desça até o fim e clique em **Abrir Mesmo Assim** ao lado do
+  Lacre, digite a senha e clique de novo em **Abrir Mesmo Assim** quando o aviso voltar. (Clicar com
+  o botão direito > Abrir não funciona mais nos macOS recentes.)
+  Só se o Mac disser que o Lacre "está danificado e não pode ser aberto", e como último recurso, rode
+  no Terminal e abra de novo: `xattr -cr /Applications/Lacre.app` (tira só do Lacre a marca de
+  arquivo baixado da internet).
+  Não sabe qual é o seu Mac? Menu Apple > **Sobre Este Mac**: "Chip Apple M…" é Apple silicon,
+  "Processador Intel" é Intel. A versão para Intel é nova e ainda não foi testada num Mac com Intel
+  de verdade.
+- **Linux:** instale antes o serviço USB (`sudo apt install usbmuxd` no Debian/Ubuntu). O `.deb` já
+  instala esse serviço (`sudo apt install ./Lacre-Linux.deb`). O AppImage funciona na maioria das
+  distribuições: torne o arquivo executável (`chmod +x Lacre-Linux.AppImage`) e abra; se não abrir,
+  instale o FUSE 2 (`libfuse2`, ou `libfuse2t64` no Ubuntu 24.04). As versões para Linux são novas e
+  ainda não foram testadas com um iPhone de verdade.
 
 ## Como usar (5 passos)
 
@@ -76,7 +108,7 @@ confiar cegamente num veredito verde.
 | --- | --- |
 | Windows 10/11 | O app gratuito **Apple Devices** da Apple (Microsoft Store), que roda o serviço USB. O iTunes também serve. |
 | macOS | Nada: o serviço USB já vem no sistema. |
-| Linux | Ainda sem instalador; compile a partir do código e rode o `usbmuxd`. |
+| Linux | O serviço USB `usbmuxd` (o `.deb` já instala). O AppImage também precisa do FUSE 2. |
 
 O iPhone precisa estar desbloqueado e com o computador marcado como confiável. A conferência de
 fábrica funciona nos iOS recentes, inclusive do 17.4 em diante.
@@ -119,8 +151,13 @@ npm install
 npm run dev
 ```
 
-As versões publicadas são compiladas pelo GitHub Actions no Windows e no macOS quando uma tag `v*`
-é enviada ([.github/workflows/build.yml](.github/workflows/build.yml)).
+As versões publicadas são compiladas pelo GitHub Actions no Windows, no macOS (Apple silicon e
+Intel) e no Linux quando uma tag `v*` é enviada
+([.github/workflows/build.yml](.github/workflows/build.yml)). Cada job também envia uma cópia com
+nome fixo (`Lacre-Windows-Instalador.exe`, `Lacre-Windows-Portatil.zip`,
+`Lacre-Mac-AppleSilicon.dmg`, `Lacre-Mac-Intel.dmg`, `Lacre-Linux.AppImage`, `Lacre-Linux.deb`), e
+assim os links `releases/latest/download/<nome>` sempre apontam para a última versão publicada. No
+Linux, o workflow abre o `.deb` e o AppImage e confere se o motor embutido ainda responde.
 
 ### Contribuir
 
