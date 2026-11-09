@@ -77,7 +77,9 @@ pub fn run() {
     app.run(|handle, event| {
         if let RunEvent::Exit = event {
             if let Some(engine) = handle.try_state::<Arc<Engine>>() {
-                engine.shutdown(Duration::from_secs(3));
+                // Up to 8 s (returns as soon as the engine exits): room to cancel the factory check,
+                // delete its temp folder and save pending iPhone cleanups before it is killed.
+                engine.shutdown(Duration::from_secs(8));
             }
         }
     });

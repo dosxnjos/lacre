@@ -77,6 +77,12 @@ How Lacre gets it:
    - `logs/FDR/FDRDiagnosticReport.plist`
    - `logs/BatteryHealth/BatteryHealth.log`
 
+   The download goes in 1 MB blocks with a 30-second watchdog. If the Apple USB service loses the
+   phone (it can happen while the cable keeps charging), Lacre shows "connection lost", waits for the
+   phone to come back and resumes from the same byte. Any other archive that appeared during the check
+   (buttons pressed twice) is deleted too. Archives that were already on the phone are listed, and
+   deleted only if you ask.
+
 What the report contains:
 
 | Field | Meaning |

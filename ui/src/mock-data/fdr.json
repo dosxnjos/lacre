@@ -282,5 +282,7 @@
   ]
  },
  "battery_health_percent": 79,
- "seal_date": "01/07/2022 01:17:04 GMT"
+ "seal_date": "01/07/2022 01:17:04 GMT",
+ "device_archive_removed": true,
+ "other_archives": []
 }

@@ -525,12 +525,14 @@ impl Engine {
 /// Default time the shell waits for a response before giving up with `timeout`.
 pub fn timeout_for(cmd: &str, args: &Value) -> Duration {
     match cmd {
-        // The engine has its own wait (default 900 s for the user to press the buttons);
-        // add room for generating, downloading and cleaning the sysdiagnose.
+        // The engine bounds itself: its own wait for the buttons (default 900 s), then generating,
+        // downloading and cleaning, plus up to 15 min per stretch without progress while it waits for
+        // the iPhone to come back (which can repeat). The shell only backstops a hung engine.
         "fdr" => {
             let engine_wait = args.get("timeout_s").and_then(Value::as_u64).unwrap_or(900);
-            Duration::from_secs(engine_wait.saturating_add(600))
+            Duration::from_secs(engine_wait.saturating_add(4 * 3600))
         }
+        "delete_archives" => Duration::from_secs(300),
         "read" => Duration::from_secs(300),
         "analyze" => Duration::from_secs(120),
         _ => Duration::from_secs(60),
@@ -726,9 +728,10 @@ mod tests {
     fn timeouts_follow_command() {
         assert_eq!(
             timeout_for("fdr", &json!({"timeout_s": 100})),
-            Duration::from_secs(700)
+            Duration::from_secs(100 + 4 * 3600)
         );
-        assert_eq!(timeout_for("fdr", &json!({})), Duration::from_secs(1500));
+        assert_eq!(timeout_for("fdr", &json!({})), Duration::from_secs(900 + 4 * 3600));
+        assert_eq!(timeout_for("delete_archives", &json!({})), Duration::from_secs(300));
         assert_eq!(timeout_for("hello", &json!({})), Duration::from_secs(60));
     }
 

@@ -9,6 +9,8 @@ export type Tab = "results" | "factory" | "tests" | "report";
 export interface FdrState {
   status: "idle" | "running" | "done" | "failed" | "cancelled";
   stage: FdrStage | null;
+  /** While `stage` is `reconnecting`: the stage the link dropped in (the step list keeps it current). */
+  pausedFrom?: FdrStage | null;
   startedAt: number | null;
   finishedAt: number | null;
   eventId: string | null;
@@ -36,8 +38,12 @@ export interface State {
   checks: Record<string, CheckResult>;
   showTech: boolean;
   demo: boolean;
-  exportNote: { kind: "ok" | "err" | "info"; text: string } | null;
+  exportNote: Note | null;
+  /** Deleting the diagnostics that were already on the iPhone (factory tab). */
+  archives: { busy: boolean; note: Note | null };
 }
+
+export interface Note { kind: "ok" | "err" | "info"; text: string }
 
 export function initialState(lang: Lang): State {
   return {
@@ -62,6 +68,7 @@ export function initialState(lang: Lang): State {
     showTech: false,
     demo: false,
     exportNote: null,
+    archives: { busy: false, note: null },
   };
 }
 
@@ -74,6 +81,7 @@ export interface Actions {
   setTab(tab: Tab): void;
   startFdr(): void;
   cancelFdr(): void;
+  deleteOldArchives(): void;
   toggleTech(): void;
   setCheck(id: string, r: CheckResult | null): void;
   exportReport(kind: "html" | "txt"): void;

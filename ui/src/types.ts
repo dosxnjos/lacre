@@ -54,8 +54,17 @@ export type OriginKind =
 export type ReadStep = "identity" | "battery" | "hardware" | "parts" | "platform" | "mdm";
 export const READ_STEPS: ReadStep[] = ["identity", "battery", "hardware", "parts", "platform", "mdm"];
 
-export type FdrStage = "waiting_trigger" | "generating" | "downloading" | "extracting" | "cleaning" | "done";
+/** `reconnecting`: the USB link dropped during waiting_trigger, generating or downloading; the engine waits
+ *  for the iPhone and resumes (e.g. ... downloading [-> reconnecting -> downloading]* -> extracting ...).
+ *  It is not a step of its own: the step list shows the step it paused (see `progressStage`). */
+export type FdrStage = "waiting_trigger" | "generating" | "downloading" | "reconnecting" | "extracting" | "cleaning" | "done";
 export const FDR_STAGES: FdrStage[] = ["waiting_trigger", "generating", "downloading", "extracting", "cleaning", "done"];
+/** The step of FDR_STAGES a stage belongs to (`reconnecting` belongs to the step it paused,
+ *  `downloading` when unknown). */
+export function progressStage(stage: FdrStage | null, pausedFrom: FdrStage | null = null): FdrStage | null {
+  if (stage !== "reconnecting") return stage;
+  return pausedFrom && pausedFrom !== "reconnecting" ? pausedFrom : "downloading";
+}
 
 export interface Hello { engine_version: string; pymobiledevice3: string; platform: string }
 export interface Prereq { usbmux_ok: boolean; hint: "apple_devices_missing" | "usbmuxd_missing" | null }
@@ -68,7 +77,15 @@ export interface RawFdr {
   fdr?: unknown;
   battery_health_percent: number | null;
   seal_date: string | null;
+  /** The engine confirmed the check's own archive is gone from the iPhone (missing in older results). */
+  device_archive_removed?: boolean;
+  /** Sysdiagnose archives that were already on the iPhone before the check (missing = none). */
+  other_archives?: OldArchive[];
 }
+
+/** `date` is local "YYYY-MM-DDTHH:MM:SS" parsed from the archive name, or null. */
+export interface OldArchive { name: string; date: string | null }
+export interface DeleteArchivesResult { deleted: string[]; failed: string[] }
 
 export interface Item { code: ItemCode; status: Status; params: Params }
 

@@ -6,11 +6,12 @@ import { brandMark, icons } from "./art";
 import { localizeModel } from "./models";
 import { buildHtml, buildTxt, reportFileName } from "./report";
 import { initialState, type Actions, type Ctx, type State, type Tab } from "./state";
-import type { Analysis, Device, EngineEvent, Hello, Lang, Prereq, RawFdr, RawRead } from "./types";
+import type { Analysis, DeleteArchivesResult, Device, EngineEvent, Hello, Lang, Prereq, RawFdr, RawRead } from "./types";
 import { READ_STEPS } from "./types";
+import { errorText } from "./views/common";
 import { connectView, prereqView, readingView, startupView } from "./views/flow";
 import { resultsView } from "./views/results";
-import { elapsedText, factoryView } from "./views/factory";
+import { elapsedText, factoryView, lostNotice } from "./views/factory";
 import { checkStats, patchCheck, testsView } from "./views/tests";
 import { reportView } from "./views/report";
 
@@ -105,7 +106,7 @@ function sideNav(): HTMLElement {
       h("button", {
         type: "button", class: `btn btn-quiet${restartArmed ? " is-armed" : ""}`, "data-fk": "restart",
         title: restartArmed ? d.nav.anotherConfirm : null,
-        disabled: s.fdr.status === "running",
+        disabled: s.fdr.status === "running" || s.archives.busy,
         onclick: act.restart as EventListener,
       }, restartArmed ? d.nav.anotherYes : d.nav.another)),
   );
@@ -125,9 +126,18 @@ function content(): HTMLElement {
       return readingView(ctx);
     case "results": {
       const view = s.tab === "factory" ? factoryView(ctx) : s.tab === "tests" ? testsView(ctx) : s.tab === "report" ? reportView(ctx) : resultsView(ctx);
-      return h("div", { class: "shell" }, sideNav(), h("div", { class: "pane" }, view));
+      // The hands-on tests can mean plugging cables: if the link drops during the copy, say so on any tab.
+      // The slot is always there (and is the live region) so the banner comes and goes without a render.
+      const slot = s.tab === "factory" ? null
+        : h("div", { id: "fdr-lost", role: "status", "aria-live": "polite" }, lostBanner());
+      return h("div", { class: "shell" }, sideNav(), h("div", { class: "pane" }, slot, view));
     }
   }
+}
+
+/** Lost-connection banner for the tabs other than factory (null when the link is fine). */
+function lostBanner(): HTMLElement | null {
+  return s.fdr.status === "running" && s.fdr.stage === "reconnecting" ? lostNotice(() => act.setTab("factory")) : null;
 }
 
 function render(): void {
@@ -165,12 +175,22 @@ function onEngineEvent(e: EngineEvent): void {
     render();
   } else if (e.event === "fdr" && s.fdr.status === "running") {
     if (e.id) s.fdr.eventId = e.id;
+    const prev = s.fdr.stage;
     if (e.stage) s.fdr.stage = e.stage;
+    if (s.fdr.stage === "reconnecting" && prev !== "reconnecting") s.fdr.pausedFrom = prev;
     if (pendingCancel && s.fdr.eventId) {
       pendingCancel = false;
       void sendCancel(s.fdr.eventId);
     }
-    if (s.phase === "results" && s.tab === "factory") render();
+    // Other tabs only show the lost-connection banner: swap it in place (a full render would drop
+    // keyboard focus on the Tests tab).
+    const lostChanged = (prev === "reconnecting") !== (s.fdr.stage === "reconnecting");
+    if (s.phase !== "results") return;
+    if (s.tab === "factory") render();
+    else if (lostChanged) {
+      const banner = lostBanner();
+      document.getElementById("fdr-lost")?.replaceChildren(...(banner ? [banner] : []));
+    }
   }
 }
 
@@ -322,8 +342,9 @@ async function startDemo(): Promise<void> {
 }
 
 async function startFdr(): Promise<void> {
-  if (!s.device || !s.raw || s.fdr.status === "running") return;
+  if (!s.device || !s.raw || s.fdr.status === "running" || s.archives.busy) return;
   pendingCancel = false;
+  s.archives.note = null;
   s.fdr = { status: "running", stage: "waiting_trigger", startedAt: Date.now(), finishedAt: null, eventId: null, error: null };
   s.tab = "factory";
   render();
@@ -344,6 +365,54 @@ async function startFdr(): Promise<void> {
     s.fdr.finishedAt = Date.now();
     if (fdrTicker !== null) { clearInterval(fdrTicker); fdrTicker = null; }
     render();
+  }
+}
+
+/** Deletes, at the user's request, the diagnostics that were already on the iPhone before the check. */
+async function deleteOldArchives(): Promise<void> {
+  const fdrAtStart = s.rawFdr;
+  const udid = s.device?.udid;
+  const names = (fdrAtStart?.other_archives ?? []).map((a) => a.name);
+  if (s.archives.busy || s.demo || !udid || !fdrAtStart || !names.length) return;
+  const job: State["archives"] = { busy: true, note: null };
+  s.archives = job;
+  render();
+  // The device was switched or the check restarted meanwhile (restart replaces s.archives): stale answer.
+  const stale = () => {
+    if (s.archives !== job || s.device?.udid !== udid || s.rawFdr !== fdrAtStart) {
+      if (s.archives === job) { s.archives = { busy: false, note: null }; render(); }
+      return true;
+    }
+    return false;
+  };
+  let note: State["archives"]["note"];
+  try {
+    const r = await s.backend!.engine<DeleteArchivesResult>("delete_archives", { udid, names });
+    if (stale()) return;
+    const o = t().fdr.oldArchives; // after the await: the language may have changed meanwhile
+    const deleted = new Set(Array.isArray(r?.deleted) ? r.deleted : []);
+    const failed = (Array.isArray(r?.failed) ? r.failed : []).filter((n) => names.includes(n));
+    fdrAtStart.other_archives = (fdrAtStart.other_archives ?? []).filter((a) => !deleted.has(a.name));
+    const gone = names.filter((n) => deleted.has(n)).length;
+    const left = fdrAtStart.other_archives.length;
+    note = failed.length || left
+      ? { kind: "err", text: [gone ? o.deleted(gone) : "", o.failed(failed.length || left)].filter(Boolean).join(" ") }
+      : { kind: "ok", text: o.deleted(gone) };
+  } catch (e) {
+    if (stale()) return;
+    const err = toEngineError(e);
+    const et = errorText(err.code);
+    note = { kind: "err", text: `${et.title}. ${et.text}${s.showTech && err.detail ? ` (${err.detail})` : ""}` };
+  } finally {
+    job.busy = false;
+  }
+  s.archives = { busy: false, note };
+  // Keep keyboard users oriented: from the button (which may vanish with the card) to the result note.
+  const active = document.activeElement as HTMLElement | null;
+  const fromButton = !active || active === document.body || active.dataset?.fk === "delete-archives";
+  render();
+  if (fromButton && s.phase === "results" && s.tab === "factory") {
+    (root.querySelector<HTMLElement>('[data-fk="archives-note"]') ?? document.getElementById("factory-title"))?.focus();
   }
 }
 
@@ -375,11 +444,13 @@ const act: Actions = {
   setTab: (tab) => {
     s.tab = tab;
     s.exportNote = null;
+    s.archives.note = null;
     render();
     window.scrollTo(0, 0);
     document.getElementById("main")?.focus({ preventScroll: true });
   },
   startFdr: () => { void startFdr(); },
+  deleteOldArchives: () => { void deleteOldArchives(); },
   cancelFdr: () => {
     if (s.fdr.status !== "running") return;
     if (s.fdr.eventId) void sendCancel(s.fdr.eventId);
@@ -399,11 +470,12 @@ const act: Actions = {
     s.lang = l;
     setLang(l);
     s.exportNote = null;
+    s.archives.note = null;
     render();
     void s.backend?.setSettings(l).catch(() => { /* not persisted; still switched */ });
   },
   restart: () => {
-    if (s.fdr.status === "running") return;
+    if (s.fdr.status === "running" || s.archives.busy) return;
     if (s.analysis && !restartArmed) {
       restartArmed = true;
       render();
@@ -421,6 +493,7 @@ const act: Actions = {
     s.showTech = false;
     s.demo = false;
     s.exportNote = null;
+    s.archives = { busy: false, note: null };
     s.fdr = { status: "idle", stage: null, startedAt: null, finishedAt: null, eventId: null, error: null };
     goConnect();
   },

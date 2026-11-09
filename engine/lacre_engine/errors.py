@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 
 from pymobiledevice3 import exceptions as pe
 
@@ -24,10 +25,19 @@ CONNECTION_LOST = (
 )
 
 
+# Device identifiers that pymobiledevice3 puts in its messages (UDID: 8-16 hex with a dash, or 40 hex on
+# older phones). The log file is what users send when asking for help, so they are masked.
+_RX_UDID = re.compile(r"\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{16}\b|\b[0-9A-Fa-f]{40}\b")
+
+
+def redact(text: str) -> str:
+    return _RX_UDID.sub("<udid>", text)
+
+
 def short(e: BaseException, limit: int = 300) -> str:
     text = str(e).strip()
     line = text.splitlines()[-1] if text else type(e).__name__
-    return f"{type(e).__name__}: {line}"[:limit]
+    return redact(f"{type(e).__name__}: {line}")[:limit]
 
 
 def map_exception(e: BaseException) -> EngineError:

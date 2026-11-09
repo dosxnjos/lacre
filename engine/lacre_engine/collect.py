@@ -16,6 +16,7 @@ import plistlib
 import re
 from typing import Any, Awaitable, Callable, Optional
 
+from pymobiledevice3 import exceptions as pe
 from pymobiledevice3 import usbmux
 from pymobiledevice3.lockdown import create_using_usbmux
 from pymobiledevice3.services.diagnostics import DiagnosticsService
@@ -124,13 +125,20 @@ class _Diag:
         self.svc: Optional[DiagnosticsService] = None
 
     async def call(self, fn: Callable[[DiagnosticsService], Awaitable[Any]], timeout: float) -> Any:
-        if self.svc is None:
-            self.svc = DiagnosticsService(self.lockdown)
-        try:
-            return await asyncio.wait_for(maybe_await(fn(self.svc)), timeout)
-        except (asyncio.TimeoutError, *CONNECTION_LOST):
-            await self.close()
-            raise
+        for attempt in (1, 2):
+            if self.svc is None:
+                self.svc = DiagnosticsService(self.lockdown)
+            try:
+                return await asyncio.wait_for(maybe_await(fn(self.svc)), timeout)
+            except pe.ConnectionFailedError:
+                # usbmux "connection refused" (seen right after plugging in): the service was not ready yet
+                await self.close()
+                if attempt == 2:
+                    raise
+                await asyncio.sleep(1.5)
+            except (asyncio.TimeoutError, *CONNECTION_LOST):
+                await self.close()
+                raise
 
     async def close(self) -> None:
         if self.svc is not None:

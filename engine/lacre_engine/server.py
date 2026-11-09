@@ -15,13 +15,16 @@ import threading
 from typing import Any, Callable, Optional
 
 from . import __version__
-from .errors import EngineError, map_exception, short
+from .errors import EngineError, map_exception, redact, short
 
 log = logging.getLogger("lacre.server")
 
 PROTOCOL_VERSION = 1
-SHUTDOWN_GRACE_S = 10.0
-FINISH_GRACE_S = 3.0
+# The shell kills the engine 8 s after asking it to shut down: everything here must fit in that.
+SHUTDOWN_GRACE_S = 2.0
+FINISH_GRACE_S = 2.0
+# Requests that work on the device for minutes: cancelled at once on shutdown.
+LONG_TASKS = ("cmd:fdr", "cmd:delete_archives")
 
 
 def pmd3_version() -> str:
@@ -84,7 +87,7 @@ class Server:
         if key in self._tasks:
             self.fail(rid, "internal", "duplicate request id in flight")
             return
-        task = asyncio.get_running_loop().create_task(self._run(rid, cmd, handler, args))
+        task = asyncio.get_running_loop().create_task(self._run(rid, cmd, handler, args), name=f"cmd:{cmd}")
         self._tasks[key] = task
         task.add_done_callback(lambda _t, k=key: self._tasks.pop(k, None))
 
@@ -148,6 +151,15 @@ class Server:
         async with self._lock(udid):
             return await collect_fdr(udid, float(timeout_s), stage)
 
+    async def cmd_delete_archives(self, rid, args):
+        from .fdr import delete_archives
+        udid = self._udid(args)
+        names = args.get("names")
+        if not isinstance(names, list):
+            raise EngineError("internal", "delete_archives: names must be a list")
+        async with self._lock(udid):
+            return await delete_archives(udid, names)
+
     async def cmd_cancel(self, rid, args):
         target = args.get("target_id")
         task = self._tasks.get(str(target))
@@ -177,19 +189,24 @@ class Server:
     # ------------------------------------------------------------ lifecycle
 
     async def drain(self) -> None:
-        """Cancel in-flight requests and let background cleanups run a little."""
+        """Shutdown. Device checks are cancelled at once, so they remove their temp download and save the
+        device cleanup before the shell's grace runs out; quick requests get a moment to answer; background
+        cleanups stop (they were saved and resume at the next start)."""
         me = asyncio.current_task()
         pending = [t for t in self._tasks.values() if t is not me and not t.done()]
-        if pending:  # quick requests get a moment to answer; long ones (fdr) are cancelled
-            _, pending = await asyncio.wait(pending, timeout=FINISH_GRACE_S)
-        for t in pending:
+        long = [t for t in pending if t.get_name() in LONG_TASKS]
+        for t in long:
             t.cancel()
         if pending:
-            await asyncio.wait(pending, timeout=SHUTDOWN_GRACE_S)
+            _, left = await asyncio.wait(pending, timeout=FINISH_GRACE_S)
+            for t in left:
+                t.cancel()
+            if left:
+                await asyncio.wait(left, timeout=SHUTDOWN_GRACE_S)
         fdr_mod = sys.modules.get("lacre_engine.fdr")  # never import it just to shut down
-        if fdr_mod is not None and hasattr(fdr_mod, "wait_background"):
+        if fdr_mod is not None and hasattr(fdr_mod, "stop_background"):
             try:
-                await fdr_mod.wait_background(SHUTDOWN_GRACE_S)
+                await fdr_mod.stop_background(SHUTDOWN_GRACE_S)
             except Exception:  # noqa: BLE001
                 pass
 
@@ -201,6 +218,15 @@ def _warm_imports() -> None:
             importlib.import_module(mod)
     except Exception as e:  # noqa: BLE001
         log.warning("warm import failed: %s", short(e))
+
+
+async def _resume_cleanups() -> None:
+    try:
+        import importlib
+        fdr_mod = await asyncio.to_thread(importlib.import_module, "lacre_engine.fdr")
+        fdr_mod.resume_pending()
+    except Exception as e:  # noqa: BLE001
+        log.warning("pending device cleanups not resumed: %s", short(e))
 
 
 async def serve(read_line: Callable[[], bytes], write: Callable[[bytes], None], warm: bool = False) -> None:
@@ -226,6 +252,15 @@ async def serve(read_line: Callable[[], bytes], write: Callable[[bytes], None], 
 
     threading.Thread(target=reader, name="stdin-reader", daemon=True).start()
     log.info("engine %s ready (%s)", __version__, sys.platform)
+    resume: Optional[asyncio.Task] = None
+    if warm:  # the real app (tests run without it): finish what an earlier session left behind
+        from . import paths
+        try:
+            paths.sweep_local_temp()
+        except OSError as e:
+            log.warning("leftover downloads not swept: %s", short(e))
+        if paths.pending_file().exists():
+            resume = asyncio.get_running_loop().create_task(_resume_cleanups())
     if warm:
         # pymobiledevice3 takes seconds to import (requests, prompt_toolkit...): load it in the background
         # so `hello` answers at once and the first `devices` does not pay the full import.
@@ -248,6 +283,13 @@ async def serve(read_line: Callable[[], bytes], write: Callable[[bytes], None], 
     await server.drain()
 
 
+class _RedactingFormatter(logging.Formatter):
+    """Masks device identifiers in every log line, tracebacks included (the log is shared for support)."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return redact(super().format(record))
+
+
 def main() -> int:
     for s in (sys.stdin, sys.stdout, sys.stderr):
         try:
@@ -258,8 +300,9 @@ def main() -> int:
     inp = sys.stdin.buffer
     # Anything printed by libraries (progress bars, prints) must not corrupt the protocol stream.
     sys.stdout = sys.stderr
-    logging.basicConfig(stream=sys.stderr, level=logging.INFO,
-                        format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(_RedactingFormatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    logging.basicConfig(level=logging.INFO, handlers=[handler])
     for noisy in ("pymobiledevice3", "asyncio"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 

@@ -121,10 +121,28 @@ export interface Dict {
     stages: Record<FdrStage, { title: string; text: string }>;
     running: string;
     cancelled: string;
+    /** After a failure past the trigger: the check's report may be on the iPhone; the engine deletes it on its own. */
+    cleanupLater: string;
     failedTitle: string;
     doneTitle: string;
     doneText: string;
     redo: string;
+    /** USB link lost during the check (stage `reconnecting`); the engine resumes when the iPhone is back. */
+    lost: { title: string; text: string; elsewhere: string; open: string };
+    /** The check's own archive could not be confirmed deleted yet (the engine keeps trying). */
+    archiveLeft: string;
+    /** Diagnostics that were already on the iPhone before the check. */
+    oldArchives: {
+      title: (n: number) => string;
+      text: (n: number) => string;
+      listLabel: string;
+      created: (date: string) => string;
+      undated: string;
+      button: (n: number) => string;
+      busy: string;
+      deleted: (n: number) => string;
+      failed: (n: number) => string;
+    };
   };
   tests: {
     title: string;

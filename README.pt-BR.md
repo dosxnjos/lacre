@@ -61,7 +61,8 @@ confiar cegamente num veredito verde.
 
 - Roda **inteiro no seu computador**. Sem conta, sem servidor, sem telemetria.
 - **Somente leitura.** O Lacre nunca grava nada no iPhone: não instala perfil, não apaga, não muda
-  ajuste. A única exceção é apagar o pacote de diagnóstico que o próprio Lacre pediu.
+  ajuste. A única exceção é apagar pacotes de diagnóstico: os criados durante a conferência, sempre, e
+  os mais antigos só quando você aperta o botão que oferece isso.
 - A conferência de fábrica baixa um sysdiagnose (uns 350 MB de registros do aparelho) para uma pasta
   temporária. O Lacre lê **só dois arquivos** dele (`logs/FDR/FDRDiagnosticReport.plist` e
   `logs/BatteryHealth/BatteryHealth.log`) e depois apaga o pacote do computador **e** do iPhone.

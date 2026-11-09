@@ -35,14 +35,22 @@ never opened. Read this list before buying.
 - **The factory check needs the seller's cooperation:** the phone must be unlocked, trusted, and
   left connected for 5 to 10 minutes. iOS leaves a screenshot in Photos when it starts.
 - **Do not close Lacre during the factory check.** The sysdiagnose archive (~350 MB of the phone's
-  logs) is deleted from the phone right after the download. If the app is closed mid-check, or the
-  check is cancelled before the buttons are pressed and the buttons are pressed anyway, the archive
-  can stay on the phone (iOS prunes old diagnostics on its own later). A "cleaning up" state that
-  blocks closing the window is planned.
-- **Every button press that vibrates starts a sysdiagnose.** If the buttons were pressed twice (for
-  example once by mistake), "Check again" can finish without a new press: it picks up the extra
-  archive from the last 10 minutes and deletes it too. Each press also leaves a screenshot in Photos,
-  which Lacre does not touch.
+  logs) is deleted from the phone right after the download, together with any other archive that
+  appeared during the check (for example from pressing the buttons twice, or right after cancelling).
+  If the USB link drops, Lacre waits for the iPhone to come back and resumes where it stopped (giving up
+  after 15 minutes without progress). Cleanup that cannot finish right away keeps retrying in the
+  background; if the app is closed first, it resumes the next time Lacre opens with that iPhone
+  connected. If that never happens, the archive stays on the phone until iOS prunes old diagnostics on
+  its own. A "cleaning up" state that blocks closing the window is planned.
+- **The Apple USB service can lose the iPhone while it keeps charging.** Charging and data are
+  separate: the cable may still charge while the service no longer sees the phone. If the copy shows
+  "connection lost" and does not resume in a few seconds, unplug and replug the cable with the iPhone
+  unlocked.
+- **Older diagnostics are only deleted when you ask.** Archives that were already on the phone before
+  the check (the owner may have made them, for example for Apple Support) are listed after the check
+  with a button to delete them; Lacre never deletes them on its own.
+- **Every button press that vibrates starts a sysdiagnose** and leaves a screenshot in Photos, which
+  Lacre does not touch.
 - **No online lookups.** Lacre does not contact Apple or anyone else. Stolen/blocked IMEI status and
   warranty must be checked by hand (your country's IMEI registry, checkcoverage.apple.com).
 - **Manual tests are manual.** The checklist and the touch page guide you; the result is what you

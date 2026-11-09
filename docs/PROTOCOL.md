@@ -25,6 +25,7 @@ Regras invariáveis:
 | `read` | `{"udid":..}` | `RawRead` (abaixo); emite eventos `progress` |
 | `fdr` | `{"udid":..,"timeout_s":900}` | `RawFdr`; emite eventos `fdr` |
 | `cancel` | `{"target_id":..}` | `{}` (cancela `fdr` em espera) |
+| `delete_archives` | `{"udid":..,"names":[..]}` | `{"deleted":[..],"failed":[..]}` (apaga pacotes antigos que o usuário escolheu) |
 | `analyze` | `{"raw":RawRead,"fdr":RawFdr\|null,"today":"YYYY-MM-DD"}` | `Analysis` (abaixo). Puro, sem aparelho. |
 | `shutdown` | `{}` | `{}` e o processo sai |
 
@@ -34,7 +35,7 @@ Regras invariáveis:
 {"v":1,"id":"<id do pedido>","ok":true,"data":{...}}
 {"v":1,"id":"<id do pedido>","ok":false,"error":{"code":"<código>","detail":"<texto técnico curto>"}}
 {"v":1,"id":"<id do pedido>","event":"progress","step":"identity|battery|hardware|parts|platform|mdm","done":3,"total":6}
-{"v":1,"id":"<id do pedido>","event":"fdr","stage":"waiting_trigger|generating|downloading|extracting|cleaning|done"}
+{"v":1,"id":"<id do pedido>","event":"fdr","stage":"waiting_trigger|generating|downloading|reconnecting|extracting|cleaning|done"}
 ```
 
 Códigos de erro: `no_device`, `not_trusted` (desbloquear e tocar em Confiar), `passcode_required`,
@@ -124,9 +125,41 @@ Campos extras (a interface pode ignorar o que não usar):
 - `RawFdr`: `"device_archive_removed": bool` (o motor confirmou que o pacote sumiu do iPhone).
   Pacote baixado sem o registro vira `has_fdr:false` (item `fdr_not_available`), não erro; o código
   `fdr_missing_report` fica reservado e hoje não é emitido. Cancelar depois que o iPhone começou a gerar
-  o pacote agenda uma limpeza em segundo plano: espera o iPhone terminar (até 15 min) e apaga o pacote.
+  o pacote agenda uma limpeza em segundo plano: espera o iPhone terminar e apaga o pacote (prazo e
+  regras atuais em "Download resistente e limpeza", abaixo).
   Cancelar ainda em `waiting_trigger` não deixa nada (o iPhone ainda não gerou nada).
 - `Analysis.device`: `"build"` (BuildVersion do iOS).
+
+### Download resistente e limpeza (09/11/2026, tarde)
+
+- **Etapa `reconnecting`**: toda operação no aparelho tem vigia; 30 s sem resposta contam como iPhone
+  perdido (o serviço USB da Apple às vezes perde o aparelho sem fechar a conexão). Em `waiting_trigger`,
+  `generating` ou `downloading`, o motor emite `reconnecting`, tenta de novo a cada 3 s e, quando o iPhone
+  volta e a etapa avança de verdade, emite a mesma etapa de novo e continua (o download do mesmo byte; a
+  geração sem precisar apertar os botões de novo). Desiste só depois de 15 min sem nenhum avanço, com o
+  último erro (`no_device`, `device_gone`, `usbmux_unavailable` ou `passcode_required`).
+- **Detecção sem a biblioteca**: o motor lista a pasta no começo e espera um pacote cujo nome final não
+  estava lá; o pacote está pronto quando tem o nome final, nada em andamento e tamanho estável por 3 s.
+  Pacote que já estava sendo escrito antes da conferência não é tomado como dela.
+- **O que o motor apaga no iPhone**, sempre só em `DiagnosticLogs/sysdiagnose`: o pacote que baixou e
+  qualquer outro cujo nome final não estava na lista inicial **e** cuja data (no nome do pacote, com o
+  fuso) cai na janela de tempo da conferência, com 10 min de folga para o relógio do iPhone (botões
+  apertados duas vezes, ou logo depois de cancelar). O que já estava lá, ou foi criado depois da
+  conferência, nunca é apagado sozinho.
+- **Limpeza pendente**: gravada em `%TEMP%\lacre-fdr\pending-cleanups.json` **antes** de esperar os
+  botões (sobrevive a fechar o app, travamento ou queda de energia) e atualizada quando o pacote é
+  identificado. O que não dá para apagar na hora é tentado em segundo plano: a cada 10 s nos primeiros
+  30 min, depois a cada 2 min enquanto o app estiver aberto. Depois de cancelar em `waiting_trigger`, o
+  motor ainda vigia a pasta por 3 min. A próxima abertura do motor retoma a lista; entrada malformada é
+  descartada sozinha, sem travar as outras, e entradas com mais de 7 dias caem.
+- **Pasta temporária**: os downloads ficam em `%TEMP%\lacre-fdr\dl-*`; o motor apaga ao terminar ou
+  cancelar, e varre a pasta ao abrir (download de um motor encerrado à força). No `shutdown`, `fdr` e
+  `delete_archives` são cancelados na hora, para limpar antes de o casco encerrar o processo.
+- `RawFdr.other_archives`: `[{"name": str, "date": "YYYY-MM-DDTHH:MM:SS"|null}]`, os pacotes que já
+  estavam no iPhone antes da conferência (data local tirada do nome). A interface pergunta antes de apagar.
+- `delete_archives`: só aceita nomes simples de pacote (`sysdiagnose_*.tar.gz`, sem pasta); o resto vai
+  para `failed`. Pacote que já não existe conta como apagado. Um pacote que uma conferência está baixando
+  é recusado.
 - Itens de data de peça (`part_date_*`, `part_undecodable`, `part_no_anchor`) levam sempre `part`,
   `serial`, `made` ("YYYY-MM"); `part_no_serial` leva `part`. `display_component` leva `index`/`count`.
 

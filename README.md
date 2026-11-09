@@ -58,7 +58,8 @@ Everything is explained in [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md). What La
 
 - Runs **entirely on your computer**. No account, no server, no telemetry.
 - **Read-only.** Lacre never writes to the iPhone: no profiles, no erase, no settings changed.
-  The one exception is deleting the diagnostic archive that Lacre itself asked for.
+  The one exception is deleting diagnostic archives: the ones created during the check, always, and
+  older ones only when you press the button that offers it.
 - The factory check downloads a sysdiagnose archive (about 350 MB of the phone's logs) to a temporary
   folder. Lacre reads **only two files** from it (`logs/FDR/FDRDiagnosticReport.plist` and
   `logs/BatteryHealth/BatteryHealth.log`) and then deletes the archive from the computer **and** from

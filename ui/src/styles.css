@@ -138,6 +138,8 @@ button { font: inherit; color: inherit; }
 .btn-primary:disabled { background: var(--line-strong); color: var(--surface); cursor: not-allowed; transform: none; }
 .btn-secondary { background: var(--surface); border-color: var(--line-strong); color: var(--ink); }
 .btn-secondary:hover { background: var(--surface-2); }
+.btn-secondary:disabled, .btn-secondary[aria-disabled="true"] { color: var(--ink-3); cursor: not-allowed; transform: none; }
+.btn-secondary:disabled:hover, .btn-secondary[aria-disabled="true"]:hover { background: var(--surface); }
 .btn-quiet { background: transparent; color: var(--ink-2); padding-left: 10px; padding-right: 10px; font-weight: 500; }
 .btn-quiet:hover { background: var(--bg-deep); color: var(--ink); }
 .btn-large { min-height: 48px; padding: 12px 26px; font-size: 16px; border-radius: 12px; }
@@ -313,6 +315,9 @@ button { font: inherit; color: inherit; }
 .callout-alert { display: block; background: var(--alert-bg); border-color: var(--alert-line); }
 .callout-alert .callout-title { color: var(--alert); }
 .callout-info { background: var(--surface); border-color: var(--line); color: var(--ink-2); }
+.callout-warn { display: block; background: var(--warn-bg); border-color: var(--warn-line); }
+.callout-warn .callout-title { color: var(--warn); }
+.callout-warn .actions { margin-top: 12px; }
 .callout-wall { background: var(--seal-tint); border-color: color-mix(in srgb, var(--seal) 28%, transparent); margin: 0; }
 .callout-wall .fact-icon { color: var(--seal); }
 
@@ -337,6 +342,11 @@ button { font: inherit; color: inherit; }
 .stages .ps-mark { margin-top: 1px; }
 .stage-body { display: grid; }
 .stage-text { font-weight: 400; color: var(--ink-2); font-size: 14px; }
+.stages li.is-paused .stage-text { color: var(--warn); }
+.stages li.is-paused .spinner { animation-play-state: paused; border-top-color: var(--warn); }
+.running .callout-warn { margin: 14px 0 0; }
+.archive-list { margin-bottom: 4px; }
+.archive-list li { display: grid; gap: 2px; padding: 11px 18px; }
 
 /* ------------------------------------------------------------- tests */
 .tests-progress { max-width: 420px; }
