@@ -5,10 +5,13 @@ never opened. Read this list before buying.
 
 ## The checks themselves
 
-- **Apple service mark (`SrvP`).** Observed on a real iPhone 13 Pro sold as model `N...` (an Apple
-  replacement unit) and sealed after the model was discontinued: every physical part matched, and only
-  the `SrvP` property changed from 0 to 1. Lacre shows it as a warning that explains the service mark,
-  not as a swapped part. Apple does not document it.
+- **Authorized Apple repairs do not show as different parts.** After an Apple repair the factory
+  record is resealed with the new parts, so they match. Observed on a real iPhone 13 Pro: Parts and
+  Service History listed a logic board and TrueDepth camera replaced on 28 Nov 2022 (genuine). The FDR
+  seal date was that same day, the `SrvP` property had changed from 0 to 1, the sales model started
+  with `N` (it lives on the replacement board, like the IMEI), and every physical part matched. Lacre
+  shows `SrvP` as a warning that points to Parts and Service History; only that screen names the parts.
+  The FDR comparison catches parts replaced outside Apple. Apple documents none of this.
 - **Replaced-part format not yet observed.** The way `FailureData` describes a swapped part
   (`SealedInstance` different from `LiveInstance`) is inferred from field names, not yet seen on a
   phone with a known replaced part. Any failure entry other than "Key is not required to seal"

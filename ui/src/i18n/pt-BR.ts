@@ -112,7 +112,7 @@ export const ptBR: Dict = {
     factoryCtaTitle: "Comparar com o registro de fábrica da Apple",
     factoryCtaText: "A conferência mais forte: o próprio iPhone lista quais peças foram seladas na fábrica e se ainda são as instaladas. Leva de 5 a 10 minutos.",
     factoryCtaButton: "Começar a conferência de fábrica",
-    sealDate: (d) => `Selado na fábrica em ${d}`,
+    sealDate: (d) => `Selado pela Apple em ${d} (na fábrica, ou no último reparo autorizado)`,
     nextTests: "A leitura não substitui testar o iPhone com as suas mãos: tela, toque carregando, câmeras, som.",
     nextTestsButton: "Ir para os testes na mão",
     counts: (ok, warn, alert) => [`${ok} OK`, warn ? `${warn} para conferir` : "", alert ? `${alert} ${alert > 1 ? "alertas" : "alerta"}` : ""].filter(Boolean).join(", "),
@@ -257,7 +257,7 @@ export const ptBR: Dict = {
     },
     fdr_service_flag: {
       title: "Marca de serviço da Apple",
-      text: "O registro de fábrica traz a marca de serviço da Apple: este iPhone passou por serviço Apple. Costuma ser aparelho de reposição da Apple (troca em garantia; o modelo de venda começa com N), e não o iPhone original da caixa. As peças físicas foram conferidas à parte, acima. Compare o IMEI da nota fiscal com o do iPhone (disque *#06#).",
+      text: "Este iPhone passou por reparo autorizado da Apple. Num reparo assim, a Apple sela o registro de novo com as peças novas: a data do selo acima é a do reparo, e as peças trocadas pela Apple passam a conferir. Veja quais foram em Ajustes > Geral > Sobre > Histórico de Peças e Serviço (a data deve bater). Peça trocada fora da Apple continuaria aparecendo como diferente.",
     },
     fdr_data_failed_to_report: { title: "Parte do registro não foi informada", text: "O iPhone não informou todos os itens. O resto da comparação continua valendo." },
     fdr_apticket: { title: "Ticket do sistema não confiável", text: (p, x) => `O registro informa “${x.s(p.value)}” para o ticket do sistema. Incomum: o sistema pode ter sido modificado.` },
@@ -365,7 +365,7 @@ export const ptBR: Dict = {
   },
   origin: {
     new_retail: "Vendido novo no varejo",
-    apple_replacement: "Aparelho de reposição da Apple (troca em garantia): é Apple, mas não é o aparelho da caixa",
+    apple_replacement: "Modelo de serviço da Apple: o iPhone recebeu placa lógica de reposição da Apple, ou é um aparelho de reposição (troca em garantia). É Apple, mas o IMEI não deve bater com o da caixa",
     apple_refurb: "Recondicionado pela Apple",
     engraved: "Vendido novo com gravação personalizada",
     demo_or_thirdparty_refurb: "Unidade de demonstração de loja ou recondicionado por terceiro (as fontes divergem): pergunte",

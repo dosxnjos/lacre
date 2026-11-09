@@ -112,7 +112,7 @@ export const en: Dict = {
     factoryCtaTitle: "Compare with Apple's factory record",
     factoryCtaText: "The strongest check: the iPhone itself lists which parts were sealed at the factory and whether they are still the ones installed. Takes 5 to 10 minutes.",
     factoryCtaButton: "Start the factory check",
-    sealDate: (d) => `Sealed at the factory on ${d}`,
+    sealDate: (d) => `Sealed by Apple on ${d} (at the factory, or at the last authorized repair)`,
     nextTests: "The reading doesn't replace trying the iPhone with your own hands: screen, touch while charging, cameras, sound.",
     nextTestsButton: "Go to the hands-on tests",
     counts: (ok, warn, alert) => [`${ok} OK`, warn ? `${warn} to check` : "", alert ? `${alert} alert${alert > 1 ? "s" : ""}` : ""].filter(Boolean).join(", "),
@@ -257,7 +257,7 @@ export const en: Dict = {
     },
     fdr_service_flag: {
       title: "Apple service mark",
-      text: "The factory record carries Apple's service mark: this iPhone went through Apple service. It's usually an Apple replacement unit (warranty exchange; its sales model starts with N) and not the original iPhone from the box. The physical parts were checked separately above. Compare the IMEI on the invoice with the iPhone's (dial *#06#).",
+      text: "This iPhone had an authorized Apple repair. In such a repair Apple reseals the record with the new parts: the seal date above is the repair date, and the parts Apple replaced now match. See which ones in Settings > General > About > Parts and Service History (the date should match). A part replaced outside Apple would still show as different.",
     },
     fdr_data_failed_to_report: { title: "Part of the record wasn't reported", text: "The iPhone didn't report every item. The rest of the comparison still counts." },
     fdr_apticket: { title: "System ticket isn't trusted", text: (p, x) => `The record reports “${x.s(p.value)}” for the system ticket. Unusual: the system may have been modified.` },
@@ -365,7 +365,7 @@ export const en: Dict = {
   },
   origin: {
     new_retail: "Sold new in a store",
-    apple_replacement: "Apple replacement unit (warranty swap): it's genuine Apple, but not the iPhone from the box",
+    apple_replacement: "Apple service model: the iPhone got an Apple replacement logic board, or is an Apple replacement unit (warranty swap). It's genuine Apple, but the IMEI shouldn't match the box",
     apple_refurb: "Refurbished by Apple",
     engraved: "Sold new with a custom engraving",
     demo_or_thirdparty_refurb: "Store demo unit or refurbished by a third party (sources disagree): ask",
