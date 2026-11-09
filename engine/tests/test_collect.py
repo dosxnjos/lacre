@@ -61,3 +61,22 @@ def test_device_ids_are_masked_in_messages():
     assert "00008030" not in short(RuntimeError(msg)) and "<udid>" in short(RuntimeError(msg))
     assert redact("old " + "a" * 40 + " id") == "old <udid> id"
     assert redact("sysdiagnose_2026.11.09_07-40-22-0300_iPhone-OS_iPhone_23G90.tar.gz").startswith("sysdiagnose_2026")
+
+
+def test_leftover_reader_of_a_dropped_connection_is_one_quiet_line(caplog):
+    import logging
+    from pymobiledevice3.exceptions import ConnectionTerminatedError
+    from lacre_engine import server as S
+
+    class Loop:
+        called = False
+
+        def default_exception_handler(self, ctx):
+            Loop.called = True
+
+    with caplog.at_level(logging.INFO, logger="lacre.server"):
+        S._quiet_dead_connections(Loop(), {"message": "Future exception was never retrieved",
+                                           "exception": ConnectionTerminatedError()})
+    assert not Loop.called and "dropped connection" in caplog.text
+    S._quiet_dead_connections(Loop(), {"message": "something else", "exception": ValueError("x")})
+    assert Loop.called  # anything else still goes to asyncio's normal handler

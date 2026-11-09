@@ -228,6 +228,19 @@ def _warm_imports() -> None:
         log.warning("warm import failed: %s", short(e))
 
 
+def _quiet_dead_connections(loop: asyncio.AbstractEventLoop, context: dict) -> None:
+    """When the iPhone drops off USB, pymobiledevice3's reader task of the abandoned connection ends with a
+    connection error nobody awaits; asyncio would log it as a scary ERROR with a traceback. One line is
+    enough (the drop itself is already logged by the check)."""
+    exc = context.get("exception")
+    dropped = isinstance(exc, (ConnectionError, EOFError, asyncio.IncompleteReadError)) or (
+        type(exc).__name__ in ("ConnectionTerminatedError", "StreamClosedError", "NotConnectedError"))
+    if exc is not None and dropped:
+        log.info("leftover task of a dropped connection ended: %s", short(exc))
+        return
+    loop.default_exception_handler(context)
+
+
 async def _resume_cleanups() -> None:
     try:
         import importlib
@@ -240,6 +253,7 @@ async def _resume_cleanups() -> None:
 async def serve(read_line: Callable[[], bytes], write: Callable[[bytes], None], warm: bool = False) -> None:
     """Run until `shutdown` or EOF. `read_line` blocks (it runs on a daemon thread); b"" means EOF."""
     loop = asyncio.get_running_loop()
+    loop.set_exception_handler(_quiet_dead_connections)
     server = Server(write)
     queue: asyncio.Queue[Optional[bytes]] = asyncio.Queue()
 
