@@ -148,7 +148,9 @@ class Server:
         async def stage(name: str) -> None:
             self.send({"id": rid, "event": "fdr", "stage": name})
 
-        async with self._lock(udid):
+        lock = self._lock(udid)
+        log.info("fdr requested (timeout %ss)%s", timeout_s, "; waiting for another request on this iPhone" if lock.locked() else "")
+        async with lock:
             return await collect_fdr(udid, float(timeout_s), stage)
 
     async def cmd_delete_archives(self, rid, args):
