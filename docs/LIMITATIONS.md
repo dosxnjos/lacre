@@ -5,6 +5,10 @@ never opened. Read this list before buying.
 
 ## The checks themselves
 
+- **Apple service mark (`SrvP`).** Observed on a real iPhone 13 Pro sold as model `N...` (an Apple
+  replacement unit) and sealed after the model was discontinued: every physical part matched, and only
+  the `SrvP` property changed from 0 to 1. Lacre shows it as a warning that explains the service mark,
+  not as a swapped part. Apple does not document it.
 - **Replaced-part format not yet observed.** The way `FailureData` describes a swapped part
   (`SealedInstance` different from `LiveInstance`) is inferred from field names, not yet seen on a
   phone with a known replaced part. Any failure entry other than "Key is not required to seal"
@@ -49,6 +53,10 @@ never opened. Read this list before buying.
 - **Older diagnostics are only deleted when you ask.** Archives that were already on the phone before
   the check (the owner may have made them, for example for Apple Support) are listed after the check
   with a button to delete them; Lacre never deletes them on its own.
+- **Apple Devices (or iTunes) copies the phone's diagnostics to the PC on its own** when the iPhone
+  connects, and iOS then renames them `….synced`. Those copies are Apple's, outside Lacre's control, in
+  `%LOCALAPPDATA%\Packages\AppleInc.AppleDevices_*\LocalCache\Roaming\Apple Computer\Logs\CrashReporter\MobileDevice\<iPhone name>\`
+  (iTunes: `%APPDATA%\Apple Computer\Logs\CrashReporter\MobileDevice\`). Delete them by hand if needed.
 - **Every button press that vibrates starts a sysdiagnose** and leaves a screenshot in Photos, which
   Lacre does not touch.
 - **No online lookups.** Lacre does not contact Apple or anyone else. Stolen/blocked IMEI status and

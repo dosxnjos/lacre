@@ -223,6 +223,13 @@ def analyze_fdr(raw_fdr: dict | None) -> dict | None:
             live, sealed = v.get("Live" + field), v.get("Sealed" + field)
             warning = str(v.get("WarningMessage", ""))
             part = FDR_PARTS.get(k, "other")
+            if k == "SrvP":
+                # Not a part: a service flag. Seen 0 -> 1 on an Apple replacement unit (model number "N...",
+                # sealed after the model was discontinued) whose physical parts all matched. Undocumented by
+                # Apple, so it is shown as a warning to explain, not as a swapped part.
+                if live != sealed:
+                    items.append(item("fdr_service_flag", "warn", key=k, sealed=plain(sealed), live=plain(live)))
+                continue
             if sealed is not None and live != sealed:
                 failed += 1
                 items.append(item("fdr_part_mismatch", "alert", key=k, part=part,

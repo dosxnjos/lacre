@@ -10,7 +10,7 @@ export type PurchaseCode =
   | "activation_state" | "origin_prefix";
 
 export type FactoryCode =
-  | "fdr_summary" | "fdr_part_mismatch" | "fdr_unverified"
+  | "fdr_summary" | "fdr_part_mismatch" | "fdr_unverified" | "fdr_service_flag"
   | "fdr_data_failed_to_report" | "fdr_apticket" | "fdr_not_available";
 
 export type PartsCode =

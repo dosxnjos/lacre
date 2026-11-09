@@ -255,6 +255,10 @@ export const ptBR: Dict = {
       title: (p, x) => `${x.fdrPart(p)}: não verificado`,
       text: (p, x) => `O iPhone não conseguiu confirmar esta peça com o registro de fábrica${p.message ? ` (${x.s(p.message)})` : ""}.`,
     },
+    fdr_service_flag: {
+      title: "Marca de serviço da Apple",
+      text: "O registro de fábrica traz a marca de serviço da Apple: este iPhone passou por serviço Apple. Costuma ser aparelho de reposição da Apple (troca em garantia; o modelo de venda começa com N), e não o iPhone original da caixa. As peças físicas foram conferidas à parte, acima. Compare o IMEI da nota fiscal com o do iPhone (disque *#06#).",
+    },
     fdr_data_failed_to_report: { title: "Parte do registro não foi informada", text: "O iPhone não informou todos os itens. O resto da comparação continua valendo." },
     fdr_apticket: { title: "Ticket do sistema não confiável", text: (p, x) => `O registro informa “${x.s(p.value)}” para o ticket do sistema. Incomum: o sistema pode ter sido modificado.` },
     fdr_not_available: { title: "O registro de fábrica não veio", text: "O diagnóstico terminou sem o registro de fábrica. Tente mais uma vez; se repetir, conte com as outras conferências." },

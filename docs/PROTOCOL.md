@@ -88,6 +88,9 @@ Fábrica (`factory`, só se houve FDR):
 - `fdr_summary` (ok se 0 falhas, senão alert; `verified`,`failed`)
 - `fdr_part_mismatch` (alert; `key`,`part`,`sealed`,`live`) — `part` é um de `battery`,`display`,`display_touch`,`display_panel`,`board`,`serial`,`imei`,`wifi`,`bluetooth`,`other`
 - `fdr_unverified` (warn; `key`,`part`,`message`)
+- `fdr_service_flag` (warn; `key`,`sealed`,`live`) — a chave `SrvP` diferente do selado. Não é peça: é a marca
+  de serviço da Apple, vista (0 → 1) num aparelho de reposição (modelo de venda N...) com todas as peças
+  físicas conferindo. Não conta como falha no `fdr_summary`.
 - `fdr_data_failed_to_report` (warn; `detail`) · `fdr_apticket` (warn; `value`)
 - `fdr_not_available` (warn) — o sysdiagnose veio sem o registro
 

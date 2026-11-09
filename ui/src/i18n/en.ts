@@ -255,6 +255,10 @@ export const en: Dict = {
       title: (p, x) => `${x.fdrPart(p)}: not verified`,
       text: (p, x) => `The iPhone couldn't confirm this part against the factory record${p.message ? ` (${x.s(p.message)})` : ""}.`,
     },
+    fdr_service_flag: {
+      title: "Apple service mark",
+      text: "The factory record carries Apple's service mark: this iPhone went through Apple service. It's usually an Apple replacement unit (warranty exchange; its sales model starts with N) and not the original iPhone from the box. The physical parts were checked separately above. Compare the IMEI on the invoice with the iPhone's (dial *#06#).",
+    },
     fdr_data_failed_to_report: { title: "Part of the record wasn't reported", text: "The iPhone didn't report every item. The rest of the comparison still counts." },
     fdr_apticket: { title: "System ticket isn't trusted", text: (p, x) => `The record reports “${x.s(p.value)}” for the system ticket. Unusual: the system may have been modified.` },
     fdr_not_available: { title: "Factory record not included", text: "The diagnostic finished without the factory record. Try once more; if it happens again, rely on the other checks." },

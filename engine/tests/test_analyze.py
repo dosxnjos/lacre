@@ -366,3 +366,17 @@ def test_hex_text():
     assert A.hex_text({"$hex": "0001"}) is None
     assert A.hex_text("  x ") == "x"
     assert A.hex_text("") is None and A.hex_text(5) is None
+
+
+def test_srvp_service_flag_is_a_warning_not_a_swapped_part():
+    # Real case (09/11): an Apple replacement unit (model number N...) whose physical parts all matched
+    # reported only SrvP 0 -> 1 in FailureProperties.
+    fdr = {"has_fdr": True, "seal_date": None, "fdr": {
+        "VerifiedData": [{"vcrt": {"LiveInstance": "B"}}, {"tcrt": {"LiveInstance": "T"}}],
+        "FailureProperties": [{"SrvP": {"SealedProperty": 0, "LiveProperty": 1}}],
+        "ApTicket": "Trusted"}}
+    sec = A.analyze_fdr(fdr)
+    codes = [(i["code"], i["status"]) for i in sec["items"]]
+    assert ("fdr_service_flag", "warn") in codes
+    assert not any(c == "fdr_part_mismatch" for c, _ in codes)
+    assert sec["items"][0]["code"] == "fdr_summary" and sec["items"][0]["status"] == "ok"
