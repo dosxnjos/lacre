@@ -153,6 +153,12 @@ class Server:
         async with lock:
             return await collect_fdr(udid, float(timeout_s), stage)
 
+    async def cmd_list_archives(self, rid, args):
+        from .fdr import list_archives
+        udid = self._udid(args)
+        async with self._lock(udid):
+            return await list_archives(udid)
+
     async def cmd_delete_archives(self, rid, args):
         from .fdr import delete_archives
         udid = self._udid(args)

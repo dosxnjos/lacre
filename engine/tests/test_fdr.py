@@ -657,3 +657,13 @@ def test_delete_archives_only_accepts_plain_archive_names(fake_device, workdir):
     assert len(res["failed"]) == 4
     assert afc.removed == [f"{DIR}/{OLD}"]
     assert set(afc.files) == {f"{DIR}/{other}", f"{DIR}/notes.txt"}
+
+
+def test_list_archives_shows_only_finished_ones(fake_device, workdir):
+    synced = "sysdiagnose_2026.11.09_03-21-03-0800_iPhone-OS_iPhone_23G83.tar.gz.synced"
+    FakeManager.afc = FakeAfc(None, existing={OLD: b"a", synced: b"b", inprog(NEW): b"...", "notes.txt": b"n"},
+                              press_at=None)
+    res = asyncio.run(F.list_archives("UDID"))
+    assert res == {"archives": [{"name": OLD, "date": "2026-11-01T10:00:00"},
+                                {"name": synced, "date": "2026-11-09T03:21:03"}]}
+    assert FakeManager.afc.removed == []  # listing never deletes

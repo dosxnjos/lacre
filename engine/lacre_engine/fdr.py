@@ -720,6 +720,21 @@ async def collect_fdr(udid: str, timeout_s: float, stage: Stage) -> dict:
         _rm_tmp(tmp, after=extract)
 
 
+async def list_archives(udid: str) -> dict:
+    """The finished sysdiagnose archives on the phone right now (read only), for the old-diagnostics card.
+
+    Archives still being written and archives a running check is working on are left out."""
+    try:
+        async with _connect(udid) as cm:
+            entries = await _list(cm.afc)
+    except EngineError:
+        raise
+    except Exception as e:  # noqa: BLE001
+        raise map_exception(e) from e
+    names = sorted(e for e in entries if final_archive_name(e) == e and _path(e) not in _claimed)
+    return {"archives": [{"name": n, "date": archive_date(n)} for n in names]}
+
+
 async def delete_archives(udid: str, names: Iterable[Any]) -> dict:
     """Delete sysdiagnose archives the user chose (the ones that were already on the phone).
 

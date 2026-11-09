@@ -25,6 +25,7 @@ Regras invariáveis:
 | `read` | `{"udid":..}` | `RawRead` (abaixo); emite eventos `progress` |
 | `fdr` | `{"udid":..,"timeout_s":900}` | `RawFdr`; emite eventos `fdr` |
 | `cancel` | `{"target_id":..}` | `{}` (cancela `fdr` em espera) |
+| `list_archives` | `{"udid":..}` | `{"archives":[{"name","date"}]}` (só leitura: pacotes prontos no iPhone agora, inclusive `.synced`) |
 | `delete_archives` | `{"udid":..,"names":[..]}` | `{"deleted":[..],"failed":[..]}` (apaga pacotes antigos que o usuário escolheu) |
 | `analyze` | `{"raw":RawRead,"fdr":RawFdr\|null,"today":"YYYY-MM-DD"}` | `Analysis` (abaixo). Puro, sem aparelho. |
 | `shutdown` | `{}` | `{}` e o processo sai |
