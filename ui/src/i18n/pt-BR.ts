@@ -77,7 +77,8 @@ export const ptBR: Dict = {
     report: "Salvar relatório",
     another: "Conferir outro iPhone",
     anotherConfirm: "Começar de novo com outro iPhone? O resultado e as respostas dos testes na tela serão apagados.",
-    anotherYes: "Sim, apagar e começar de novo",
+    anotherYes: "Sim, limpar a tela e começar de novo",
+    anotherKeep: "Sair sem apagar os diagnósticos",
   },
   results: {
     checkedOn: (d) => `Conferido em ${d}`,
@@ -169,6 +170,7 @@ export const ptBR: Dict = {
       busy: "Apagando…",
       deleted: (n) => (n === 1 ? "Diagnóstico antigo apagado do iPhone." : `${n} diagnósticos antigos apagados do iPhone.`),
       failed: (n) => (n === 1 ? "1 diagnóstico não pôde ser apagado. Tente de novo." : `${n} diagnósticos não puderam ser apagados. Tente de novo.`),
+      beforeLeaving: (n) => `Antes de conferir outro iPhone: este ainda tem ${n === 1 ? "1 diagnóstico antigo" : `${n} diagnósticos antigos`}, e sair não apaga. Para apagar, use o botão “Apagar” logo acima. Para sair mesmo assim, clique em “Sair sem apagar os diagnósticos”.`,
     },
   },
   tests: {

@@ -26,6 +26,11 @@ let pollTimer: number | null = null;
 let fdrTicker: number | null = null;
 let pendingCancel = false;
 let restartArmed = false;
+
+/** Old diagnostics still on the connected iPhone (listed by the factory check, not deleted yet). */
+function oldArchivesLeft(): number {
+  return !s.demo && s.device ? (s.rawFdr?.other_archives?.length ?? 0) : 0;
+}
 let restartTimer: number | null = null;
 
 function today(): string {
@@ -108,7 +113,7 @@ function sideNav(): HTMLElement {
         title: restartArmed ? d.nav.anotherConfirm : null,
         disabled: s.fdr.status === "running" || s.archives.busy,
         onclick: act.restart as EventListener,
-      }, restartArmed ? d.nav.anotherYes : d.nav.another)),
+      }, restartArmed ? (oldArchivesLeft() ? d.nav.anotherKeep : d.nav.anotherYes) : d.nav.another)),
   );
 }
 
@@ -478,9 +483,16 @@ const act: Actions = {
     if (s.fdr.status === "running" || s.archives.busy) return;
     if (s.analysis && !restartArmed) {
       restartArmed = true;
+      const left = oldArchivesLeft();
+      if (left) {
+        // Leaving does not delete the old diagnostics: say so where the delete button is.
+        s.tab = "factory";
+        s.archives.note = { kind: "info", text: t().fdr.oldArchives.beforeLeaving(left) };
+      }
       render();
+      if (left) document.querySelector<HTMLElement>('[data-fk="archives-note"]')?.focus();
       if (restartTimer !== null) clearTimeout(restartTimer);
-      restartTimer = window.setTimeout(() => { restartArmed = false; if (s.phase === "results") render(); }, 5000);
+      restartTimer = window.setTimeout(() => { restartArmed = false; if (s.phase === "results") render(); }, left ? 30000 : 5000);
       return;
     }
     restartArmed = false;

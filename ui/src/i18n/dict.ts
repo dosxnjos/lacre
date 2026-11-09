@@ -87,6 +87,8 @@ export interface Dict {
     another: string;
     anotherConfirm: string;
     anotherYes: string;
+    /** Armed restart while the iPhone still holds old diagnostics: leaving does not delete them. */
+    anotherKeep: string;
   };
   results: {
     checkedOn: (date: string) => string;
@@ -142,6 +144,7 @@ export interface Dict {
       busy: string;
       deleted: (n: number) => string;
       failed: (n: number) => string;
+      beforeLeaving: (n: number) => string;
     };
   };
   tests: {

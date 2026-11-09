@@ -77,7 +77,8 @@ export const en: Dict = {
     report: "Save report",
     another: "Check another iPhone",
     anotherConfirm: "Start over with another iPhone? The results and test answers on screen will be cleared.",
-    anotherYes: "Yes, clear and start over",
+    anotherYes: "Yes, clear the screen and start over",
+    anotherKeep: "Leave without deleting the diagnostics",
   },
   results: {
     checkedOn: (d) => `Checked ${d}`,
@@ -169,6 +170,7 @@ export const en: Dict = {
       busy: "Deleting…",
       deleted: (n) => (n === 1 ? "Old diagnostic report deleted from the iPhone." : `${n} old diagnostic reports deleted from the iPhone.`),
       failed: (n) => (n === 1 ? "1 report couldn't be deleted. Try again." : `${n} reports couldn't be deleted. Try again.`),
+      beforeLeaving: (n) => `Before checking another iPhone: this one still has ${n === 1 ? "1 old diagnostic report" : `${n} old diagnostic reports`}, and leaving doesn't delete ${n === 1 ? "it" : "them"}. To delete, use the “Delete” button just above. To leave anyway, click “Leave without deleting the diagnostics”.`,
     },
   },
   tests: {
