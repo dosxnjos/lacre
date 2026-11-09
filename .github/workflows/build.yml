@@ -1,0 +1,84 @@
+# Builds the Lacre installers on Windows and macOS and attaches them to a draft GitHub release.
+# Runs on version tags (v1.2.3) and manually from the Actions tab.
+name: build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv and Python 3.12
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      # Freezes the Python engine (pymobiledevice3==11.50.2) with PyInstaller in onedir mode
+      # into engine/dist/lacre-engine/, which Tauri bundles as a resource.
+      - name: Build engine (PyInstaller onedir)
+        run: uv run --project engine --with pyinstaller python engine/build.py
+
+      # The frozen engine must answer "hello" (no iPhone needed on the runner).
+      - name: Smoke test frozen engine
+        timeout-minutes: 3
+        run: |
+          exe=engine/dist/lacre-engine/lacre-engine
+          [ -f "$exe.exe" ] && exe="$exe.exe"
+          if [ ! -f "$exe" ]; then ls -la engine/dist/lacre-engine || true; echo "frozen engine not found"; exit 1; fi
+          out=$(printf '%s\n%s\n' \
+            '{"v":1,"id":"ci","cmd":"hello","args":{}}' \
+            '{"v":1,"id":"bye","cmd":"shutdown","args":{}}' | "$exe")
+          echo "$out"
+          echo "$out" | grep '"id": *"ci"' | grep -q '"ok": *true'
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build app and attach installers to a draft release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tauriScript: npm run tauri
+          tagName: v__VERSION__
+          releaseName: "Lacre v__VERSION__"
+          releaseBody: "See the README for how to install and use Lacre. Windows also needs Apple's free Apple Devices app (Microsoft Store)."
+          releaseDraft: true
+          prerelease: false

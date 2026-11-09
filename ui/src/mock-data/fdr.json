@@ -1,0 +1,286 @@
+{
+ "has_fdr": true,
+ "fdr": {
+  "ApTicket": "Trusted",
+  "DataFailedToReport": [],
+  "Entitlements": [],
+  "FailureProperties": [],
+  "SealDate": "01/07/2022 01:17:04 GMT",
+  "FailureData": [
+   {
+    "bbpc": {
+     "LiveInstance": "28148932-MF8SA957015430HV11718227",
+     "WarningMessage": "Key is not required to seal"
+    }
+   },
+   {
+    "eCfg": {
+     "LiveInstance": "82489638-346578Q13315A98H",
+     "WarningMessage": "Key is not required to seal"
+    }
+   },
+   {
+    "rCfg": {
+     "LiveInstance": "93010310-518347G82997H76G",
+     "WarningMessage": "Key is not required to seal"
+    }
+   }
+  ],
+  "VerifiedData": [
+   {
+    "bbcl": {
+     "LiveInstance": "11656670-YX1BN513338726FJ73178108"
+    }
+   },
+   {
+    "bbpv": {
+     "LiveInstance": "01326773-NB2NA647468723KG09805009"
+    }
+   },
+   {
+    "vcrt": {
+     "LiveInstance": "FL8220908G8P3QVJ0-A1B2C3D4"
+    }
+   },
+   {
+    "appv": {
+     "LiveInstance": "85435346-247510Q99118G84E"
+    }
+   },
+   {
+    "pcrt": {
+     "LiveInstance": "51354278-498084Y12411T24K"
+    }
+   },
+   {
+    "CtCl": {
+     "LiveInstance": "WGZ53487J0CXP4B05+24278680112805982620450533"
+    }
+   },
+   {
+    "HmCl": {
+     "LiveInstance": "YDM86923F2PAF5P34+21607337543303654145868501-4FVJ019655PW"
+    }
+   },
+   {
+    "IfCl": {
+     "LiveInstance": "8DNV340608TY"
+    }
+   },
+   {
+    "lcrt": {
+     "LiveInstance": "35615951KSKY65"
+    }
+   },
+   {
+    "pcii": {
+     "LiveInstance": "64823PYNY2994680443PV9X577738RF148951H4H"
+    }
+   },
+   {
+    "pcve": {
+     "LiveInstance": "32003RWCQ6936763201PH2Z870831QE788957W8P"
+    }
+   },
+   {
+    "psd2": {
+     "LiveInstance": "87277JHXJ8734714345LT1E236231PP587603P6V"
+    }
+   },
+   {
+    "psd1": {
+     "LiveInstance": "09670MKNP8893734670NL6F729806VV016272B4N"
+    }
+   },
+   {
+    "pcvc": {
+     "LiveInstance": "53755NJPJ1708053100HG0W232719GQ452991F4D"
+    }
+   },
+   {
+    "pmpc": {
+     "LiveInstance": "90496NZGC9314919058PY5C850671PM726284W8R"
+    }
+   },
+   {
+    "prf1": {
+     "LiveInstance": "76945HCJQ3799650752RG5J549480SG136783Z7X"
+    }
+   },
+   {
+    "prf2": {
+     "LiveInstance": "77014HNZH4957885685MZ7J443135DT233749S9K"
+    }
+   },
+   {
+    "pcvi": {
+     "LiveInstance": "13435FKAZ8240084271AV4R775204RD167190E2V"
+    }
+   },
+   {
+    "preg": {
+     "LiveInstance": "41318PWWW3867749649WB9D334123FT120679R4B"
+    }
+   },
+   {
+    "pcic": {
+     "LiveInstance": "34471YHJX9361832421BF4W947174ZN488771W0P"
+    }
+   },
+   {
+    "pbas": {
+     "LiveInstance": "59401HYVV0490278742VP7C756551FL674680Q1L"
+    }
+   },
+   {
+    "pdcl": {
+     "LiveInstance": "45168AYTQ6038597703JT2K771093ZF480861H1Q"
+    }
+   },
+   {
+    "pwcl": {
+     "LiveInstance": "12748ZJPR7378263982CJ6L840449VY727875L8T"
+    }
+   },
+   {
+    "psnv": {
+     "LiveInstance": "67533VNHP0576627028VL1Q187026XE174596X1L"
+    }
+   },
+   {
+    "pfcl": {
+     "LiveInstance": "YTN5780W1H4HC6D1Q"
+    }
+   },
+   {
+    "pspc": {
+     "LiveInstance": "24005045-5P238P9YFFF1WN9YH79EH7474YA748FC"
+    }
+   },
+   {
+    "rMCl": {
+     "LiveInstance": "75946474-3671369M94406JAV"
+    }
+   },
+   {
+    "rSCl": {
+     "LiveInstance": "09743953-3942104Q09521KLP"
+    }
+   },
+   {
+    "rcrt": {
+     "LiveInstance": "23285884-2474517C23685CNA"
+    }
+   },
+   {
+    "scrt": {
+     "LiveInstance": "48175496-513709T59317Z46D"
+    }
+   },
+   {
+    "seal": {
+     "LiveInstance": "20047113-826758P92617W64B"
+    }
+   },
+   {
+    "ShMC": {
+     "LiveInstance": "Z5.37-735158506JG171YG9005HE931T3V3352"
+    }
+   },
+   {
+    "ShSC": {
+     "LiveInstance": "W0.42-284210205HV502JB2681CR758V1Q8390-84700766-177115W21249X98Z"
+    }
+   },
+   {
+    "fCfg": {
+     "LiveInstance": "56984789-611836Q36576P15P"
+    }
+   },
+   {
+    "tcrt": {
+     "LiveInstance": "L4M2711C1PDME80VT-8LY1P56049K5"
+    }
+   },
+   {
+    "GpCl": {
+     "LiveInstance": "D9S3273D5TMDJ93PT-9WY8A94024Z4"
+    }
+   }
+  ],
+  "VerifiedProperties": [
+   {
+    "SrNm": {
+     "LiveProperty": "DV6J110JH32D"
+    }
+   },
+   {
+    "BMac": {
+     "LiveProperty": "G6:PQ:5F:54:L9:91"
+    }
+   },
+   {
+    "drp#": {
+     "LiveProperty": "02290147679764381561497S403690034G2J4L1076226T388Y5160607C5969664160529Q51613696816453521818835M23124G29212X77997995527177449058147Q005K1199867V80793L9782071518203778892M54665Y9B5C5D864492519254629Z1486528C6S5054235R3H221K1S88059296"
+    }
+   },
+   {
+    "tsid": {
+     "LiveProperty": "222Z9270653QW473"
+    }
+   },
+   {
+    "seid": {
+     "LiveProperty": "834R35YV774688623924075818141247S26137M0PB685HNC"
+    }
+   },
+   {
+    "bat#": {
+     "LiveProperty": "FL8220908G8P3QVJ0"
+    }
+   },
+   {
+    "meid": {
+     "LiveProperty": "01043289861434"
+    }
+   },
+   {
+    "mlb#": {
+     "LiveProperty": "DVX2258196BA133S"
+    }
+   },
+   {
+    "WMac": {
+     "LiveProperty": "E4:PA:9M:3V:62:Y1"
+    }
+   },
+   {
+    "imei": {
+     "LiveProperty": "356000000000011"
+    }
+   },
+   {
+    "arc#": {
+     "LiveProperty": "AM153195205TLXFY7"
+    }
+   },
+   {
+    "nuid": {
+     "LiveProperty": "7X22170K30G05486"
+    }
+   },
+   {
+    "eeid": {
+     "LiveProperty": "87403450541566765277584161692845"
+    }
+   },
+   {
+    "ime2": {
+     "LiveProperty": "356000000000029"
+    }
+   }
+  ]
+ },
+ "battery_health_percent": 79,
+ "seal_date": "01/07/2022 01:17:04 GMT"
+}

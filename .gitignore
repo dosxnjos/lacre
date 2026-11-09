@@ -1,0 +1,18 @@
+# leituras reais de aparelho: nunca versionar
+*.raw.json
+relatorios/
+reports/
+# build
+node_modules/
+dist/
+build/
+target/
+engine/dist/
+engine/build/
+engine/*.spec
+.venv/
+__pycache__/
+*.pyc
+.tmp/
+# planos de trabalho locais (como nos outros projetos pessoais)
+roadmap/

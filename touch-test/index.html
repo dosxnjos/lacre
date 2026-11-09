@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lacre">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0e1014">
+<!-- No network at all: the page works offline once loaded and never sends data anywhere. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Lacre · teste de toque</title>
+<style>
+:root{
+  --bg:#f4f5f7;--fg:#14161a;--muted:#5d6470;--card:#ffffff;--line:#dfe2e7;
+  --accent:#2563eb;--accent-fg:#ffffff;--chip:#eef0f3;
+  --ok:#15803d;--ok-bg:#dcfce7;--warn:#a16207;--warn-bg:#fef3c7;--fail:#b91c1c;--fail-bg:#fee2e2;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0e1014;--fg:#eef0f3;--muted:#9aa3af;--card:#171a20;--line:#272b33;
+    --accent:#4f8cff;--accent-fg:#ffffff;--chip:#20242c;
+    --ok:#34d399;--ok-bg:#0f2e22;--warn:#fbbf24;--warn-bg:#33270a;--fail:#f87171;--fail-bg:#3a1414;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%}
+html.testing,body.testing{overflow:hidden;overscroll-behavior:none;height:100%}
+body.testing{position:fixed;inset:0;background:#000}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.screen{display:none}
+.screen.on{display:block}
+.page{max-width:560px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 16px) calc(env(safe-area-inset-right) + 16px)
+          calc(env(safe-area-inset-bottom) + 32px) calc(env(safe-area-inset-left) + 16px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.2px}
+.brand svg{width:26px;height:26px}
+h1{font-size:26px;line-height:1.2;margin:14px 0 6px}
+h2{font-size:17px;margin:0 0 8px}
+h3{font-size:16px;margin:0}
+p{margin:0 0 10px}
+.lead{color:var(--muted)}
+.small{font-size:14px;color:var(--muted)}
+.callout{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:16px 0}
+.callout ol{margin:0 0 10px;padding-left:22px}
+.callout li{margin:4px 0}
+.callout.st-pass{border-color:var(--ok);background:var(--ok-bg)}
+.callout.st-warn{border-color:var(--warn);background:var(--warn-bg)}
+.callout.st-fail{border-color:var(--fail);background:var(--fail-bg)}
+.power{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:8px 0 16px;font-weight:600}
+.seg{display:inline-flex;background:var(--chip);border-radius:12px;padding:3px}
+.seg button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-weight:600;color:var(--muted)}
+.seg button[aria-checked="true"]{background:var(--accent);color:var(--accent-fg)}
+.tests{display:grid;gap:12px}
+.test{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.test-h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font-size:14px;font-weight:700}
+.test p{font-size:15px;color:var(--muted)}
+.sub{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--line);margin-top:10px}
+.sub-name{font-weight:600;font-size:15px;width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--muted);white-space:nowrap;font-weight:600}
+.chip.st-pass{background:var(--ok-bg);color:var(--ok)}
+.chip.st-warn{background:var(--warn-bg);color:var(--warn)}
+.chip.st-fail{background:var(--fail-bg);color:var(--fail)}
+.btn{border:1px solid var(--line);background:var(--card);padding:10px 16px;border-radius:12px;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.wide{width:100%;margin-top:16px;padding:14px}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--fail)}
+.tips ul{margin:0;padding-left:20px}
+.tips li{margin:6px 0;font-size:15px}
+footer{margin-top:24px;font-size:13px;color:var(--muted);text-align:center}
+.rows{display:grid;gap:8px;margin:12px 0}
+.srow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.srow h3{margin-bottom:6px}
+.srow .line{font-size:14px;color:var(--muted);margin:4px 0 0}
+.srow .line b{color:var(--fg)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#copyMsg{min-height:1.4em;font-size:14px;color:var(--muted)}
+#sumText{white-space:pre-wrap;word-break:break-word;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;-webkit-user-select:text;user-select:text}
+
+/* ---------- test screen ---------- */
+#test{position:fixed;inset:0;background:#000;color:#fff;overflow:hidden;touch-action:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+#test.on{display:block}
+#cv{position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:none}
+#hud{position:absolute;top:calc(env(safe-area-inset-top) + 8px);left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:6px;padding:5px 5px 5px 14px;border-radius:999px;
+  background:rgba(18,20,26,.78);font-size:14px;font-weight:600;white-space:nowrap;
+  pointer-events:none;max-width:calc(100% - 24px - env(safe-area-inset-left) - env(safe-area-inset-right))}
+#hudText{overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+#hud button{pointer-events:auto;border:0;border-radius:999px;padding:7px 12px;background:#fff;color:#111;font-size:14px;font-weight:700}
+#hud button.alt{background:rgba(255,255,255,.16);color:#fff}
+#hud.locked button,#hud button[hidden]{display:none}
+#hud[hidden]{display:none}
+#hint{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%);
+  width:min(420px, calc(100% - 32px));background:rgba(0,0,0,.78);color:#fff;border-radius:16px;padding:12px 14px;
+  font-size:14px;line-height:1.4;pointer-events:none;transition:opacity .5s ease;opacity:0;border:1px solid rgba(255,255,255,.18)}
+#hint.on{opacity:1}
+#hint b{font-size:15px}
+#hint .hint-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+#hint button{pointer-events:auto;border:0;border-radius:999px;padding:6px 12px;background:#fff;color:#111;font-weight:700;font-size:13px}
+#hint:not(.on) button{pointer-events:none}
+#panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(400px, calc(100% - 32px));max-height:calc(100% - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow:auto;background:rgba(20,22,28,.96);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:20px;
+  padding:18px 18px 16px;display:none;touch-action:pan-y;-webkit-user-select:text;user-select:text}
+#panel.on{display:block}
+#panel h2{font-size:19px;margin-bottom:10px}
+#panel p{font-size:15px;color:#d7dbe2}
+#panel .badge{display:inline-block;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;margin-bottom:10px}
+#panel .badge.st-pass{background:#0f2e22;color:#34d399}
+#panel .badge.st-warn{background:#33270a;color:#fbbf24}
+#panel .badge.st-fail{background:#3a1414;color:#f87171}
+#panel .metric{font-weight:700;color:#fff}
+#panel .next{color:#93c5fd}
+#panel .seg{background:rgba(255,255,255,.1);margin:2px 0 12px}
+#panel .seg button{color:#c9ced6}
+#panel .seg button[aria-checked="true"]{color:#fff}
+#pBtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+#pBtns button{flex:1 1 auto;border:0;border-radius:12px;padding:12px 14px;font-weight:700;background:rgba(255,255,255,.14);color:#fff}
+#pBtns button.primary{background:#4f8cff}
+#sa{position:fixed;inset:0;visibility:hidden;pointer-events:none;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+</style>
+</head>
+<body>
+<div id="sa" aria-hidden="true"></div>
+
+<main id="home" class="screen on page">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="16" cy="16" r="8.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2.2"/><path d="M11.5 16.4l3 3 6-6.4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i18n="brand"></span>
+    </div>
+    <button id="langBtn" class="btn ghost" type="button"></button>
+  </header>
+  <h1 data-i18n="home_title"></h1>
+  <p class="lead" data-i18n="home_lead"></p>
+
+  <section class="callout">
+    <h2 data-i18n="twice_title"></h2>
+    <ol>
+      <li data-i18n-html="twice_1"></li>
+      <li data-i18n-html="twice_2"></li>
+    </ol>
+    <p class="small" data-i18n="twice_pb"></p>
+    <p class="small" data-i18n="twice_cheap"></p>
+  </section>
+
+  <div class="power">
+    <span data-i18n="power_label"></span>
+    <div class="seg" role="radiogroup" data-powerseg></div>
+  </div>
+
+  <section class="tests">
+    <article class="test">
+      <div class="test-h"><span class="num">1</span><h3 data-i18n="t_calib"></h3></div>
+      <p data-i18n="d_calib"></p>
+      <div class="sub"><div class="chips" data-chips="calib"></div><button class="btn primary" type="button" data-start="calib" data-i18n="start"></button></div>
+    </article>
+    <article class="test">
+      <div class="test-h"><span class="num">2</span><h3 data-i18n="t_cover"></h3></div>
+      <p data-i18n="d_cover"></p>
+      <div class="sub"><div class="chips" data-chips="cover"></div><button class="btn primary" type="button" data-start="cover" data-i18n="start"></button></div>
+    </article>
+    <article class="test">
+      <div class="test-h"><span class="num">3</span><h3 data-i18n="t_ghost"></h3></div>
+      <p data-i18n="d_ghost"></p>
+      <div class="sub"><div class="sub-name" data-i18n="b_handsoff"></div><div class="chips" data-chips="handsoff"></div><button class="btn primary" type="button" data-start="handsoff" data-i18n="start"></button></div>
+      <div class="sub"><div class="sub-name" data-i18n="b_draw"></div><div class="chips" data-chips="draw"></div><button class="btn primary" type="button" data-start="draw" data-i18n="start"></button></div>
+    </article>
+    <article class="test">
+      <div class="test-h"><span class="num">4</span><h3 data-i18n="t_display"></h3></div>
+      <p data-i18n="d_display"></p>
+      <div class="sub"><div class="chips" data-chips="display"></div><button class="btn primary" type="button" data-start="display" data-i18n="start"></button></div>
+    </article>
+  </section>
+
+  <button id="toSummary" class="btn primary wide" type="button" data-i18n="see_results"></button>
+
+  <section class="callout tips">
+    <h2 data-i18n="tips_title"></h2>
+    <ul>
+      <li data-i18n="tip_lock"></li>
+      <li data-i18n="tip_bright"></li>
+      <li data-i18n="tip_film"></li>
+      <li id="tipFull" data-i18n="tip_full"></li>
+      <li data-i18n="tip_app"></li>
+    </ul>
+  </section>
+  <footer data-i18n="footer"></footer>
+</main>
+
+<main id="summary" class="screen page">
+  <header class="top">
+    <button id="sumBack" class="btn ghost" type="button" data-i18n="back"></button>
+    <button id="langBtn2" class="btn ghost" type="button"></button>
+  </header>
+  <h1 data-i18n="summary_title"></h1>
+  <div id="sumVerdict" class="callout"></div>
+  <div id="sumRows" class="rows"></div>
+  <div class="actions">
+    <button id="copyBtn" class="btn primary" type="button" data-i18n="copy"></button>
+    <button id="shareBtn" class="btn" type="button" data-i18n="share" hidden></button>
+  </div>
+  <p id="copyMsg" aria-live="polite"></p>
+  <pre id="sumText"></pre>
+  <div class="actions"><button id="clearBtn" class="btn ghost danger" type="button" data-i18n="clear"></button></div>
+</main>
+
+<div id="test" class="screen" aria-live="polite">
+  <canvas id="cv"></canvas>
+  <div id="hud"><span id="hudText"></span><button id="hudBtn2" class="alt" type="button" hidden></button><button id="hudBtn" type="button"></button></div>
+  <div id="hint"></div>
+  <div id="panel" role="dialog" aria-modal="true"><h2 id="pTitle"></h2><div id="pBody"></div><div id="pBtns"></div></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= i18n ================= */
+const I18N = {
+pt: {
+  doc_title: 'Lacre · teste de toque',
+  brand: 'Lacre',
+  lang_toggle: 'English',
+  home_title: 'Teste de toque e tela',
+  home_lead: 'Abra esta página no Safari do iPhone que você vai conferir. Nada sai do aparelho: a página não envia dados.',
+  twice_title: 'Faça cada teste duas vezes',
+  twice_1: '<b>Fora da tomada</b>, só na bateria.',
+  twice_2: '<b>Na tomada de parede</b>, com um carregador comum ligado no iPhone. É assim que aparece o toque fantasma de tela com defeito ou trocada.',
+  twice_pb: 'Power bank não substitui a tomada: ele não está ligado à rede elétrica e pode esconder o defeito. Leve um carregador de parede e o cabo.',
+  twice_cheap: 'Se falhar só com um carregador barato, repita com outro carregador bom. Se falhar com os dois, o problema é do aparelho.',
+  power_label: 'Agora o aparelho está:',
+  power_battery: 'Na bateria',
+  power_wall: 'Na tomada',
+  chip_battery: 'Bateria',
+  chip_wall: 'Tomada',
+  not_done: 'não feito',
+  st_pass: 'OK', st_warn: 'Atenção', st_fail: 'Falhou',
+  t_calib: 'Calibração do toque',
+  d_calib: 'Toque no centro de cada alvo. Mostra se o toque é registrado fora do dedo (por exemplo, sempre um pouco abaixo).',
+  t_cover: 'Cobertura da tela',
+  d_cover: 'Arraste um dedo pela tela inteira, inclusive bordas e cantos. Área que nunca acende é área morta.',
+  t_ghost: 'Toque fantasma',
+  d_ghost: 'Mãos fora: o aparelho fica parado na mesa e a página conta qualquer toque que aparecer sozinho. Desenho livre: conta quando o traço pula para longe do dedo.',
+  b_handsoff: 'Mãos fora',
+  b_draw: 'Desenho livre',
+  t_display: 'Cores da tela',
+  d_display: 'Cores sólidas em tela cheia para achar pixel morto, mancha e tom estranho. Toque para trocar a cor.',
+  name_calib: 'Calibração do toque',
+  name_cover: 'Cobertura da tela',
+  name_handsoff: 'Toque fantasma · mãos fora',
+  name_draw: 'Toque fantasma · desenho livre',
+  name_display: 'Cores da tela',
+  start: 'Começar',
+  see_results: 'Ver resultado',
+  tips_title: 'Antes de começar',
+  tip_lock: 'Ajustes › Tela e Brilho › Bloqueio Automático › Nunca, para a tela não apagar no teste de mãos fora. Volte ao normal depois.',
+  tip_bright: 'Brilho no máximo para o teste de cores.',
+  tip_film: 'Película grossa, trincada ou suja atrapalha o toque. Se algo falhar, peça para tirar a película e repita.',
+  tip_full: 'Para testar a tela inteira, inclusive onde fica a barra do Safari: Compartilhar › Adicionar à Tela de Início, e abra pelo ícone.',
+  tip_app: 'No fim, ainda na tomada, use um app comum por 1 a 2 minutos (Instagram: rolar o feed, digitar, dar zoom). Toque que pula sozinho, letra errada ou coisa abrindo sem você tocar é defeito.',
+  footer: 'Lacre · código aberto (MIT)',
+  hud_done: 'Concluir', hud_exit: 'Sair', hud_restart: 'Recomeçar',
+  back: '‹ Voltar', redo: 'Refazer', home: 'Início', go: 'Começar',
+  next_wall: 'Agora ligue o carregador de parede, troque para “Na tomada” e repita este teste.',
+  cur_power: 'Modo de energia deste teste:',
+  calib_intro: 'Toque com a ponta do dedo no centro de cada alvo, um de cada vez ({n} alvos). A cruz e o ponto azul aparecem exatamente onde o iPhone registrou o toque: eles devem nascer debaixo do dedo, não ao lado nem abaixo.',
+  calib_hud: 'Alvo {i}/{n} · último {last} · média {avg}',
+  calib_free: 'Livre · média {avg} px',
+  calib_ignored: 'Toque longe do alvo: ignorado',
+  cover_intro: 'Arraste um dedo devagar pela tela inteira até todas as células ficarem verdes. Passe pelas quatro bordas e pelos cantos. Células amarelas ainda não receberam toque.',
+  cover_intro2: 'Na borda de baixo, arraste de lado começando um pouco acima: deslizar a partir da borda pode sair do Safari.',
+  cover_hud: 'Cobertura {p}% · faltam {left}',
+  cover_rotated: 'A tela girou: a grade recomeçou.',
+  handsoff_intro: 'Ligue o iPhone no carregador de parede (ou deixe na bateria, se for a primeira rodada), aperte Começar e coloque o aparelho na mesa. Não toque nele nem no cabo. A página conta qualquer toque que aparecer sozinho.',
+  handsoff_intro2: 'Se a tela apagar no meio, desative o Bloqueio Automático e repita.',
+  handsoff_30: 'Começar · 30 s', handsoff_60: '60 s',
+  handsoff_grace: 'Solte o aparelho na mesa… {s}',
+  handsoff_run: 'Não toque · {s} s · toques: {n}',
+  handsoff_hidden: 'A tela apagou ou a página saiu da frente, então o teste parou. Desative o Bloqueio Automático e repita.',
+  handsoff_stopped: 'Teste interrompido',
+  draw_intro: 'Desenhe devagar com um dedo só, por uns 20 segundos, pela tela toda: círculos, zigue-zague, linhas longas. Na tomada, é aqui que o toque costuma pular sozinho. Saltos aparecem em vermelho; toques extras, em laranja.',
+  draw_hud: 'Saltos {j} · extras {x} · {s} s',
+  display_intro: 'Brilho no máximo. Toque na tela para passar pelas cores. Procure pontos que não mudam de cor, manchas, faixas e tom amarelado ou rosado.',
+  col_white: 'Branco', col_black: 'Preto', col_red: 'Vermelho', col_green: 'Verde', col_blue: 'Azul', col_gray: 'Cinza 50%',
+  hint_white: 'Manchas, sombras e tom amarelado. Abra a Central de Controle, segure o brilho e alterne o True Tone: se a opção não existir, a tela pode ter sido trocada.',
+  hint_black: 'Pontos acesos e luz vazando pelas bordas.',
+  hint_rgb: 'Pontos de outra cor (pixel morto ou preso).',
+  hint_gray: 'Faixas, manchas e marcas de imagem fixa.',
+  hint_tap: 'Toque para a próxima cor',
+  display_q: 'Viu algum defeito?',
+  display_q_body: 'Pixel morto ou preso, mancha, faixa, luz vazando, tom estranho ou True Tone ausente.',
+  display_no: 'Não, tudo certo', display_yes: 'Sim, vi defeito', display_again: 'Ver de novo',
+  r_calib: '{n} toques · distância média {avg} px · desvio médio {bias} px {dir}',
+  r_calib_nobias: '{n} toques · distância média {avg} px · sem desvio para um lado',
+  dir_below: 'para baixo', dir_above: 'para cima', dir_left: 'para a esquerda', dir_right: 'para a direita',
+  r_cover: '{p}% da tela · {left} células sem toque',
+  r_cover_jumps: ' · {j} saltos',
+  r_handsoff: '{n} toques sozinhos em {s} s',
+  r_draw: '{s} s de desenho · {j} saltos · {x} toques extras',
+  r_display_pass: 'Nenhum defeito visto',
+  r_display_fail: 'Defeito visto pelo comprador',
+  m_calib_pass: 'O toque cai onde está o dedo.',
+  m_calib_warn: 'Toque um pouco impreciso. Repita com calma; se o desvio continuar para o mesmo lado, desconfie.',
+  m_calib_fail_bias: 'O toque está sendo registrado longe do dedo, sempre para o mesmo lado. Sinal de tela trocada ou descalibrada.',
+  m_calib_fail_spread: 'O toque está espalhado e impreciso. Repita com calma; se continuar, a tela tem problema.',
+  m_cover_pass: 'A tela inteira responde ao toque.',
+  m_cover_warn: 'Ficaram áreas sem resposta (em amarelo). Tente de novo passando por elas; se nunca acendem, é área morta da tela.',
+  m_handsoff_pass: 'Nenhum toque apareceu sozinho.',
+  m_handsoff_fail: 'Apareceram toques sem ninguém tocar: é toque fantasma. Se foi na tomada, repita com outro carregador bom; se repetir, não compre.',
+  m_draw_pass: 'O traço seguiu o dedo, sem saltos.',
+  m_draw_warn: 'Alguns saltos ou toques extras. Repita devagar com um dedo só; se continuar, desconfie.',
+  m_draw_fail: 'O toque pula para longe do dedo: sinal de toque fantasma ou tela com defeito.',
+  m_draw_short: 'Pouco desenho para concluir. Desenhe pelo menos 8 segundos.',
+  m_display_pass: 'Sem defeito visível nas cores.',
+  m_display_fail: 'Defeito na tela visto a olho. Tela com defeito ou trocada derruba o valor do aparelho.',
+  summary_title: 'Resultado',
+  sum_empty: 'Nenhum teste feito ainda.',
+  sum_pass: 'Tudo certo nos testes feitos.',
+  sum_warn: 'Há pontos de atenção: repita esses testes com calma.',
+  sum_fail: 'Pelo menos um teste falhou. Veja qual abaixo e repita para confirmar antes de decidir.',
+  sum_missing_wall: 'Falta fazer os testes na tomada de parede: é lá que o toque fantasma aparece.',
+  sum_missing_battery: 'Falta fazer os testes na bateria, para comparar.',
+  copy: 'Copiar resultado', copied: 'Copiado.', copy_fail: 'Não deu para copiar: selecione o texto abaixo.',
+  share: 'Compartilhar', clear: 'Apagar resultados', cleared: 'Resultados apagados.',
+  txt_header: 'Lacre · teste de toque e tela',
+  txt_screen: 'Tela {w}×{h} pt, escala {dpr}x, {orient}',
+  portrait: 'retrato', landscape: 'paisagem',
+  txt_battery: 'Na bateria', txt_wall: 'Na tomada de parede'
+},
+en: {
+  doc_title: 'Seal Check · touch test',
+  brand: 'Seal Check',
+  lang_toggle: 'Português',
+  home_title: 'Touch and display test',
+  home_lead: 'Open this page in Safari on the iPhone you are checking. Nothing leaves the device: this page sends no data.',
+  twice_title: 'Run each test twice',
+  twice_1: '<b>Unplugged</b>, on battery.',
+  twice_2: '<b>Plugged into a wall outlet</b>, with a regular charger connected to the iPhone. This is when ghost touches from a faulty or replaced screen show up.',
+  twice_pb: 'A power bank is not a substitute for the wall outlet: it is not connected to the mains and can hide the defect. Bring a wall charger and the cable.',
+  twice_cheap: 'If it fails only with a cheap charger, retry with a good one. If it fails with both, the problem is the phone.',
+  power_label: 'Right now the phone is:',
+  power_battery: 'On battery',
+  power_wall: 'Plugged in',
+  chip_battery: 'Battery',
+  chip_wall: 'Wall',
+  not_done: 'not done',
+  st_pass: 'OK', st_warn: 'Check', st_fail: 'Failed',
+  t_calib: 'Touch calibration',
+  d_calib: 'Tap the center of each target. Shows whether touches are registered away from your finger (for example, always slightly below).',
+  t_cover: 'Screen coverage',
+  d_cover: 'Drag one finger across the whole screen, including edges and corners. Any area that never lights up is a dead area.',
+  t_ghost: 'Ghost touch',
+  d_ghost: 'Hands off: the phone lies still on the table and the page counts any touch that appears by itself. Free draw: counts when the line jumps away from your finger.',
+  b_handsoff: 'Hands off',
+  b_draw: 'Free draw',
+  t_display: 'Display colors',
+  d_display: 'Full-screen solid colors to find dead pixels, stains and odd tint. Tap to change color.',
+  name_calib: 'Touch calibration',
+  name_cover: 'Screen coverage',
+  name_handsoff: 'Ghost touch · hands off',
+  name_draw: 'Ghost touch · free draw',
+  name_display: 'Display colors',
+  start: 'Start',
+  see_results: 'See results',
+  tips_title: 'Before you start',
+  tip_lock: 'Settings › Display & Brightness › Auto-Lock › Never, so the screen stays on during the hands-off test. Set it back afterwards.',
+  tip_bright: 'Brightness all the way up for the color test.',
+  tip_film: 'A thick, cracked or dirty screen protector can disturb touch. If something fails, ask to remove it and retry.',
+  tip_full: 'To test the whole screen, including where the Safari bar sits: Share › Add to Home Screen, then open it from the icon.',
+  tip_app: 'At the end, still plugged in, use a regular app for 1 to 2 minutes (Instagram: scroll the feed, type, zoom). Touches that jump, wrong letters or things opening on their own mean a defect.',
+  footer: 'Seal Check · open source (MIT)',
+  hud_done: 'Finish', hud_exit: 'Exit', hud_restart: 'Restart',
+  back: '‹ Back', redo: 'Redo', home: 'Home', go: 'Start',
+  next_wall: 'Now plug in the wall charger, switch to “Plugged in” and repeat this test.',
+  cur_power: 'Power mode for this test:',
+  calib_intro: 'With your fingertip, tap the center of each target, one at a time ({n} targets). The crosshair and the blue dot appear exactly where the iPhone registered the touch: they should appear under your finger, not beside or below it.',
+  calib_hud: 'Target {i}/{n} · last {last} · avg {avg}',
+  calib_free: 'Free · avg {avg} px',
+  calib_ignored: 'Touch far from the target: ignored',
+  cover_intro: 'Slowly drag one finger across the whole screen until every cell turns green. Go along all four edges and into the corners. Yellow cells have not been touched yet.',
+  cover_intro2: 'On the bottom edge, drag sideways starting slightly above it: swiping up from the edge can leave Safari.',
+  cover_hud: 'Coverage {p}% · {left} left',
+  cover_rotated: 'The screen rotated: the grid started over.',
+  handsoff_intro: 'Plug the iPhone into the wall charger (or leave it on battery for the first round), press Start and put the phone down on the table. Do not touch it or the cable. The page counts any touch that appears by itself.',
+  handsoff_intro2: 'If the screen turns off midway, disable Auto-Lock and retry.',
+  handsoff_30: 'Start · 30 s', handsoff_60: '60 s',
+  handsoff_grace: 'Put the phone down… {s}',
+  handsoff_run: 'Hands off · {s} s · touches: {n}',
+  handsoff_hidden: 'The screen turned off or the page went to the background, so the test stopped. Disable Auto-Lock and retry.',
+  handsoff_stopped: 'Test stopped',
+  draw_intro: 'Draw slowly with a single finger for about 20 seconds across the whole screen: circles, zigzags, long lines. When plugged in, this is where touches tend to jump on their own. Jumps show in red; extra touches in orange.',
+  draw_hud: 'Jumps {j} · extra {x} · {s} s',
+  display_intro: 'Brightness all the way up. Tap the screen to go through the colors. Look for dots that do not change color, stains, bands and a yellow or pink tint.',
+  col_white: 'White', col_black: 'Black', col_red: 'Red', col_green: 'Green', col_blue: 'Blue', col_gray: 'Gray 50%',
+  hint_white: 'Stains, shadows and yellow tint. Open Control Center, hold the brightness slider and toggle True Tone: if the option is missing, the screen may have been replaced.',
+  hint_black: 'Lit dots and light bleeding at the edges.',
+  hint_rgb: 'Dots of another color (dead or stuck pixel).',
+  hint_gray: 'Bands, stains and burn-in marks.',
+  hint_tap: 'Tap for the next color',
+  display_q: 'Did you see any defect?',
+  display_q_body: 'Dead or stuck pixel, stain, band, light bleed, odd tint or missing True Tone.',
+  display_no: 'No, all good', display_yes: 'Yes, I saw a defect', display_again: 'See again',
+  r_calib: '{n} taps · average distance {avg} px · average offset {bias} px {dir}',
+  r_calib_nobias: '{n} taps · average distance {avg} px · no one-sided offset',
+  dir_below: 'down', dir_above: 'up', dir_left: 'to the left', dir_right: 'to the right',
+  r_cover: '{p}% of the screen · {left} cells not touched',
+  r_cover_jumps: ' · {j} jumps',
+  r_handsoff: '{n} touches by themselves in {s} s',
+  r_draw: '{s} s of drawing · {j} jumps · {x} extra touches',
+  r_display_pass: 'No defect seen',
+  r_display_fail: 'Defect seen by the buyer',
+  m_calib_pass: 'Touches land where your finger is.',
+  m_calib_warn: 'Touch is slightly imprecise. Retry calmly; if the offset keeps going the same way, be suspicious.',
+  m_calib_fail_bias: 'Touches are registered away from your finger, always to the same side. Sign of a replaced or miscalibrated screen.',
+  m_calib_fail_spread: 'Touches are scattered and imprecise. Retry calmly; if it persists, the screen has a problem.',
+  m_cover_pass: 'The whole screen responds to touch.',
+  m_cover_warn: 'Some areas did not respond (in yellow). Retry over them; if they never light up, it is a dead area of the screen.',
+  m_handsoff_pass: 'No touch appeared by itself.',
+  m_handsoff_fail: 'Touches appeared with nobody touching: that is ghost touch. If it was plugged in, retry with another good charger; if it happens again, do not buy.',
+  m_draw_pass: 'The line followed your finger, with no jumps.',
+  m_draw_warn: 'A few jumps or extra touches. Retry slowly with one finger; if it persists, be suspicious.',
+  m_draw_fail: 'Touches jump away from your finger: sign of ghost touch or a faulty screen.',
+  m_draw_short: 'Not enough drawing to conclude. Draw for at least 8 seconds.',
+  m_display_pass: 'No visible defect in the colors.',
+  m_display_fail: 'Screen defect seen by eye. A faulty or replaced screen lowers the phone’s value.',
+  summary_title: 'Results',
+  sum_empty: 'No test done yet.',
+  sum_pass: 'All good in the tests done.',
+  sum_warn: 'Some points need attention: repeat those tests calmly.',
+  sum_fail: 'At least one test failed. See which one below and repeat it to confirm before deciding.',
+  sum_missing_wall: 'The wall-outlet round is missing: that is where ghost touch shows up.',
+  sum_missing_battery: 'The battery round is missing, for comparison.',
+  copy: 'Copy result', copied: 'Copied.', copy_fail: 'Could not copy: select the text below.',
+  share: 'Share', clear: 'Clear results', cleared: 'Results cleared.',
+  txt_header: 'Seal Check · touch and display test',
+  txt_screen: 'Screen {w}×{h} pt, scale {dpr}x, {orient}',
+  portrait: 'portrait', landscape: 'landscape',
+  txt_battery: 'On battery', txt_wall: 'Plugged into a wall outlet'
+}
+};
+
+/* ================= storage (best effort) ================= */
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+const ss = {
+  get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+};
+
+let lang = (() => {
+  let q = null;
+  try { q = new URLSearchParams(location.search).get('lang'); } catch (e) {}
+  if (q === 'en' || q === 'pt') return q;
+  const s = ls.get('lacre.tt.lang');
+  if (s === 'en' || s === 'pt') return s;
+  return (navigator.language || '').toLowerCase().startsWith('pt') ? 'pt' : 'en';
+})();
+
+function t(key, params) {
+  let s = I18N[lang][key];
+  if (s == null) s = I18N.pt[key];
+  if (s == null) return key;
+  if (params) s = s.replace(/\{(\w+)\}/g, (m, n) => (params[n] != null ? String(params[n]) : m));
+  return s;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ================= app state ================= */
+const TESTS = ['calib', 'cover', 'handsoff', 'draw', 'display'];
+const POWERS = ['battery', 'wall'];
+const S = { power: ss.get('lacre.tt.power') === 'wall' ? 'wall' : 'battery', results: {} };
+try { S.results = JSON.parse(ss.get('lacre.tt.results') || '{}') || {}; } catch (e) { S.results = {}; }
+
+function persist() { ss.set('lacre.tt.results', JSON.stringify(S.results)); ss.set('lacre.tt.power', S.power); }
+function setPower(p) { S.power = p; persist(); renderPowerSegs(); }
+function saveResult(id, status, metrics, msg) {
+  S.results[id + ':' + S.power] = { status, metrics, msg, at: Date.now() };
+  persist();
+}
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ================= home / summary rendering ================= */
+function powerSegHtml() {
+  return POWERS.map(p => `<button type="button" role="radio" data-power="${p}" aria-checked="${S.power === p}">${esc(t('power_' + p))}</button>`).join('');
+}
+function renderPowerSegs() {
+  $$('[data-powerseg]').forEach(el => { el.innerHTML = powerSegHtml(); });
+}
+function chipsHtml(id) {
+  return POWERS.map(pw => {
+    const r = S.results[id + ':' + pw];
+    const st = r ? r.status : 'none';
+    return `<span class="chip st-${st}">${esc(t('chip_' + pw))} · ${esc(r ? t('st_' + st) : t('not_done'))}</span>`;
+  }).join('');
+}
+function renderHome() {
+  renderPowerSegs();
+  $$('[data-chips]').forEach(el => { el.innerHTML = chipsHtml(el.dataset.chips); });
+  const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  $('#tipFull').hidden = standalone;
+}
+
+function metricLine(id, m) {
+  if (!m) return '';
+  switch (id) {
+    case 'calib':
+      return m.dir === 'none' ? t('r_calib_nobias', m) : t('r_calib', Object.assign({}, m, { dir: t('dir_' + m.dir) }));
+    case 'cover':
+      return t('r_cover', m) + (m.jumps ? t('r_cover_jumps', { j: m.jumps }) : '');
+    case 'handsoff': return t('r_handsoff', m);
+    case 'draw': return t('r_draw', m);
+    case 'display': return t(m.ok ? 'r_display_pass' : 'r_display_fail');
+  }
+  return '';
+}
+
+function overall() {
+  const vals = Object.values(S.results);
+  const has = pw => TESTS.some(id => S.results[id + ':' + pw]);
+  let status = 'none';
+  if (vals.length) {
+    status = vals.some(r => r.status === 'fail') ? 'fail' : vals.some(r => r.status === 'warn') ? 'warn' : 'pass';
+  }
+  return { status, hasBattery: has('battery'), hasWall: has('wall') };
+}
+
+function summaryText() {
+  const L = [];
+  const now = new Date();
+  const loc = lang === 'pt' ? 'pt-BR' : 'en-US';
+  L.push(t('txt_header'));
+  L.push(now.toLocaleString(loc, { dateStyle: 'short', timeStyle: 'short' }) + ' · ' + t('txt_screen', {
+    w: Math.round(screen.width), h: Math.round(screen.height),
+    dpr: Math.round((window.devicePixelRatio || 1) * 100) / 100,
+    orient: innerWidth > innerHeight ? t('landscape') : t('portrait')
+  }));
+  const o = overall();
+  for (const pw of POWERS) {
+    L.push('');
+    L.push(t('txt_' + pw));
+    for (const id of TESTS) {
+      const r = S.results[id + ':' + pw];
+      L.push('- ' + t('name_' + id) + ': ' + (r ? t('st_' + r.status) + ' · ' + metricLine(id, r.metrics) : t('not_done')));
+    }
+  }
+  L.push('');
+  L.push(o.status === 'none' ? t('sum_empty') : t('sum_' + o.status));
+  if (o.status !== 'none' && !o.hasWall) L.push(t('sum_missing_wall'));
+  if (o.status !== 'none' && !o.hasBattery) L.push(t('sum_missing_battery'));
+  return L.join('\n');
+}
+
+function renderSummary() {
+  const o = overall();
+  const v = $('#sumVerdict');
+  v.className = 'callout' + (o.status !== 'none' ? ' st-' + o.status : '');
+  let h = `<p><b>${esc(o.status === 'none' ? t('sum_empty') : t('sum_' + o.status))}</b></p>`;
+  if (o.status !== 'none' && !o.hasWall) h += `<p class="small">${esc(t('sum_missing_wall'))}</p>`;
+  if (o.status !== 'none' && !o.hasBattery) h += `<p class="small">${esc(t('sum_missing_battery'))}</p>`;
+  v.innerHTML = h;
+  $('#sumRows').innerHTML = TESTS.map(id => {
+    const lines = POWERS.map(pw => {
+      const r = S.results[id + ':' + pw];
+      const chip = `<span class="chip st-${r ? r.status : 'none'}">${esc(t('chip_' + pw))} · ${esc(r ? t('st_' + r.status) : t('not_done'))}</span>`;
+      return `<p class="line">${chip} ${r ? esc(metricLine(id, r.metrics)) : ''}</p>`;
+    }).join('');
+    return `<div class="srow"><h3>${esc(t('name_' + id))}</h3>${lines}</div>`;
+  }).join('');
+  $('#sumText').textContent = summaryText();
+  $('#shareBtn').hidden = !navigator.share;
+}
+
+function applyI18n() {
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.title = t('doc_title');
+  $$('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $$('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  $('#langBtn').textContent = t('lang_toggle');
+  $('#langBtn2').textContent = t('lang_toggle');
+  renderHome();
+  if ($('#summary').classList.contains('on')) renderSummary();
+}
+function toggleLang() { lang = lang === 'pt' ? 'en' : 'pt'; ls.set('lacre.tt.lang', lang); applyI18n(); }
+
+function show(id) {
+  ['home', 'summary', 'test'].forEach(s => $('#' + s).classList.toggle('on', s === id));
+  const testing = id === 'test';
+  document.documentElement.classList.toggle('testing', testing);
+  document.body.classList.toggle('testing', testing);
+  if (!testing) window.scrollTo(0, 0);
+}
+
+/* ================= canvas + input ================= */
+const testEl = $('#test');
+const cv = $('#cv');
+const ctx = cv.getContext('2d');
+const layer = document.createElement('canvas');
+const lctx = layer.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+let M = null;          // active mode object
+let raf = 0;
+const P = new Map();   // active pointers: id -> {id,x,y,t,downT,trail}
+const TRAIL = 24;
+
+function safeInsets() {
+  const cs = getComputedStyle($('#sa'));
+  return { top: parseFloat(cs.paddingTop) || 0, right: parseFloat(cs.paddingRight) || 0,
+           bottom: parseFloat(cs.paddingBottom) || 0, left: parseFloat(cs.paddingLeft) || 0 };
+}
+function hudBottom() {
+  const hud = $('#hud');
+  if (hud.hidden) return safeInsets().top;
+  return hud.getBoundingClientRect().bottom;
+}
+
+function resize() {
+  if (!M) return;
+  const r = testEl.getBoundingClientRect();
+  const nw = Math.round(r.width), nh = Math.round(r.height);
+  DPR = Math.min(window.devicePixelRatio || 1, 3);
+  const changed = nw !== W || nh !== H;
+  W = nw; H = nh;
+  cv.width = Math.max(1, Math.round(W * DPR));
+  cv.height = Math.max(1, Math.round(H * DPR));
+  layer.width = cv.width; layer.height = cv.height;
+  lctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (changed && M.onResize) M.onResize();
+}
+let resizeQueued = false;
+function queueResize() {
+  if (resizeQueued) return;
+  resizeQueued = true;
+  requestAnimationFrame(() => { resizeQueued = false; resize(); });
+}
+window.addEventListener('resize', queueResize);
+window.addEventListener('orientationchange', () => setTimeout(queueResize, 150));
+if (window.visualViewport) visualViewport.addEventListener('resize', queueResize);
+
+function frame(now) {
+  raf = requestAnimationFrame(frame);
+  if (!M) return;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  M.draw(now);
+}
+
+function localXY(e, rect) { return [e.clientX - rect.left, e.clientY - rect.top]; }
+function evTime(e) { return e.timeStamp || performance.now(); }
+
+cv.addEventListener('pointerdown', e => {
+  if (!M) return;
+  if (e.cancelable) e.preventDefault();
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  const [x, y] = localXY(e, cv.getBoundingClientRect());
+  const tm = evTime(e);
+  const p = { id: e.pointerId, x, y, t: tm, downT: tm, trail: [{ x, y, t: tm }] };
+  const others = P.size;
+  P.set(e.pointerId, p);
+  if (M.down) M.down(p, others);
+}, { passive: false });
+
+cv.addEventListener('pointermove', e => {
+  const p = P.get(e.pointerId);
+  if (!p || !M) return;
+  if (e.cancelable) e.preventDefault();
+  let list = [];
+  try { list = (e.getCoalescedEvents && e.getCoalescedEvents()) || []; } catch (_) { list = []; }
+  if (!list.length) list = [e];
+  const rect = cv.getBoundingClientRect();
+  for (const ce of list) {
+    const [x, y] = localXY(ce, rect);
+    const tm = evTime(ce);
+    if (x === p.x && y === p.y) continue;
+    const prev = { x: p.x, y: p.y, t: p.t };
+    p.x = x; p.y = y; p.t = Math.max(tm, prev.t);
+    p.trail.push({ x, y, t: p.t });
+    if (p.trail.length > TRAIL) p.trail.shift();
+    if (M.move) M.move(p, prev);
+  }
+}, { passive: false });
+
+function pointerEnd(e) {
+  const p = P.get(e.pointerId);
+  if (!p) return;
+  P.delete(e.pointerId);
+  if (M && M.up) M.up(p, e.type === 'pointercancel');
+}
+cv.addEventListener('pointerup', pointerEnd);
+cv.addEventListener('pointercancel', pointerEnd);
+
+// Block scrolling, double-tap zoom, magnifier and callouts on the test surface.
+['touchstart', 'touchmove', 'touchend'].forEach(type =>
+  cv.addEventListener(type, e => { if (e.cancelable) e.preventDefault(); }, { passive: false }));
+document.addEventListener('touchmove', e => {
+  if (document.body.classList.contains('testing') && !(e.target.closest && e.target.closest('#panel'))) {
+    if (e.cancelable) e.preventDefault();
+  }
+}, { passive: false });
+['gesturestart', 'gesturechange', 'gestureend'].forEach(type => document.addEventListener(type, e => e.preventDefault()));
+document.addEventListener('dblclick', e => { if (document.body.classList.contains('testing')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if (document.body.classList.contains('testing')) e.preventDefault(); });
+
+/* ================= wake lock + sound ================= */
+let wake = null;
+async function requestWake() {
+  try { if ('wakeLock' in navigator && document.visibilityState === 'visible') wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
+}
+function releaseWake() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
+document.addEventListener('visibilitychange', () => {
+  if (!M) return;
+  if (document.visibilityState === 'visible') requestWake();
+  else if (M.onHidden) M.onHidden();
+});
+let actx = null;
+function unlockAudio() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    actx = actx || new AC();
+    if (actx.resume) actx.resume();
+  } catch (e) { actx = null; }
+}
+function beep() {
+  try {
+    if (!actx) return;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = 880; g.gain.value = 0.12;
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 0.25);
+  } catch (e) {}
+}
+
+/* ================= HUD / panel / hint ================= */
+const hud = $('#hud'), hudText = $('#hudText'), hudBtn = $('#hudBtn'), hudBtn2 = $('#hudBtn2');
+let hudLast = '';
+function setHudText(s) { if (s !== hudLast) { hudLast = s; hudText.textContent = s; } }
+function setHud(opts) {
+  hud.hidden = !!opts.hidden;
+  hud.classList.toggle('locked', !!opts.locked);
+  hudBtn.textContent = t(opts.btn || 'hud_done');
+  hudBtn.onclick = opts.onBtn || (() => finishCurrent());
+  if (opts.btn2) { hudBtn2.hidden = false; hudBtn2.textContent = t(opts.btn2); hudBtn2.onclick = opts.onBtn2; }
+  else { hudBtn2.hidden = true; hudBtn2.onclick = null; }
+  if (opts.text != null) setHudText(opts.text);
+}
+const panel = $('#panel');
+function panelOpen() { return panel.classList.contains('on'); }
+function showPanel({ title, status, body, power, buttons }) {
+  $('#pTitle').textContent = title || '';
+  let h = '';
+  if (status) h += `<div class="badge st-${status}">${esc(t('st_' + status))} · ${esc(t('chip_' + S.power))}</div>`;
+  h += body || '';
+  if (power) h += `<p class="small" style="margin:10px 0 4px">${esc(t('cur_power'))}</p><div class="seg" role="radiogroup" data-powerseg>${powerSegHtml()}</div>`;
+  $('#pBody').innerHTML = h;
+  const bx = $('#pBtns');
+  bx.innerHTML = '';
+  (buttons || []).forEach(b => {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.textContent = b.label;
+    if (b.primary) el.className = 'primary';
+    el.addEventListener('click', b.fn);
+    bx.appendChild(el);
+  });
+  panel.classList.add('on');
+  panel.scrollTop = 0;
+}
+function hidePanel() { panel.classList.remove('on'); }
+const hintEl = $('#hint');
+let hintTimer = 0;
+function showHint(html, ms) {
+  hintEl.innerHTML = html;
+  hintEl.classList.add('on');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => hintEl.classList.remove('on'), ms || 2600);
+}
+function hideHint() { clearTimeout(hintTimer); hintEl.classList.remove('on'); }
+
+/* ================= mode lifecycle ================= */
+let currentId = null;
+function openTest(id, opts) {
+  if (M && M.dispose) M.dispose();
+  P.clear();
+  hidePanel(); hideHint();
+  currentId = id;
+  show('test');
+  M = MODES[id]();
+  W = 0; H = 0;
+  resize();
+  lctx.clearRect(0, 0, W, H);
+  M.init(!!(opts && opts.skipIntro));
+  queueResize();
+  requestWake();
+  if (!raf) raf = requestAnimationFrame(frame);
+}
+function closeTest() {
+  if (M && M.dispose) M.dispose();
+  M = null; currentId = null;
+  P.clear();
+  hidePanel(); hideHint();
+  cancelAnimationFrame(raf); raf = 0;
+  releaseWake();
+  show('home');
+  renderHome();
+}
+function finishCurrent() { if (M && M.finish) M.finish(); else closeTest(); }
+function introPanel(titleKey, bodyHtml, onGo, extraButtons) {
+  showPanel({
+    title: t(titleKey), body: bodyHtml, power: true,
+    buttons: (extraButtons || [{ label: t('go'), primary: true, fn: onGo }]).concat([{ label: t('back'), fn: closeTest }])
+  });
+}
+function resultPanel(id, status, metrics, msg) {
+  saveResult(id, status, metrics, msg);
+  let body = `<p class="metric">${esc(metricLine(id, metrics))}</p><p>${esc(t(msg))}</p>`;
+  if (S.power === 'battery') body += `<p class="next">${esc(t('next_wall'))}</p>`;
+  showPanel({
+    title: t('name_' + id), status, body,
+    buttons: [{ label: t('redo'), primary: true, fn: () => openTest(id, { skipIntro: true }) }, { label: t('home'), fn: closeTest }]
+  });
+}
+
+/* ================= drawing helpers ================= */
+function dot(c, x, y, r, fill) { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fillStyle = fill; c.fill(); }
+function ring(c, x, y, r, stroke, lw) { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.strokeStyle = stroke; c.lineWidth = lw || 2; c.stroke(); }
+function seg(c, x1, y1, x2, y2, stroke, lw) { c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.strokeStyle = stroke; c.lineWidth = lw || 1; c.stroke(); }
+function label(c, txt, x, y, color) {
+  c.font = '600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  const w = c.measureText(txt).width;
+  let lx = Math.min(Math.max(4, x), W - w - 12), ly = Math.min(Math.max(18, y), H - 6);
+  c.fillStyle = 'rgba(0,0,0,.65)';
+  c.fillRect(lx - 4, ly - 15, w + 8, 20);
+  c.fillStyle = color || '#fff';
+  c.fillText(txt, lx, ly);
+}
+function drawTrail(p, color) {
+  const tr = p.trail;
+  for (let k = 1; k < tr.length; k++) {
+    ctx.globalAlpha = k / tr.length;
+    seg(ctx, tr[k - 1].x, tr[k - 1].y, tr[k].x, tr[k].y, color, 3);
+  }
+  ctx.globalAlpha = 1;
+}
+function crosshair(p) {
+  seg(ctx, 0, p.y, W, p.y, 'rgba(56,214,255,.55)', 1);
+  seg(ctx, p.x, 0, p.x, H, 'rgba(56,214,255,.55)', 1);
+  drawTrail(p, '#38d6ff');
+  dot(ctx, p.x, p.y, 5.5, '#38d6ff');
+  ring(ctx, p.x, p.y, 5.5, '#fff', 1.5);
+  label(ctx, Math.round(p.x) + ', ' + Math.round(p.y), p.x + 14, p.y - 14, '#bdefff');
+}
+// A jump is a large position change between consecutive samples of one continuous touch,
+// faster than a finger moves when drawing slowly.
+function isJump(p, prev, minPx, minSpeed) {
+  const d = Math.hypot(p.x - prev.x, p.y - prev.y);
+  const dt = Math.max(1, p.t - prev.t);
+  return d >= minPx && d / dt >= minSpeed;
+}
+const r0 = v => Math.round(v);
+
+/* ================= mode: calibration ================= */
+function Calib() {
+  const N = 15, R = 22;
+  let targets = [], i = 0, taps = [], started = false, done = false, last = null, flash = null;
+  function makeTargets() {
+    const pts = [];
+    const fx = [0, 0.5, 1], fy = [0, 0.25, 0.5, 0.75, 1];
+    for (const y of fy) for (const x of fx) {
+      const jx = (Math.random() - 0.5) * 0.12, jy = (Math.random() - 0.5) * 0.08;
+      pts.push({ fx: Math.min(1, Math.max(0, x + jx)), fy: Math.min(1, Math.max(0, y + jy)) });
+    }
+    for (let k = pts.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pts[k], pts[j]] = [pts[j], pts[k]]; }
+    return pts;
+  }
+  function pos(k) {
+    const sa = safeInsets(), m = 36;
+    const left = sa.left + m, right = W - sa.right - m;
+    const top = Math.max(hudBottom(), sa.top) + m, bottom = H - sa.bottom - m;
+    const tg = targets[k];
+    return [left + tg.fx * Math.max(0, right - left), top + tg.fy * Math.max(0, bottom - top)];
+  }
+  function stats() {
+    const n = taps.length;
+    if (!n) return null;
+    let sd = 0, sx = 0, sy = 0, mx = 0;
+    for (const tp of taps) { sd += tp.d; sx += tp.dx; sy += tp.dy; mx = Math.max(mx, tp.d); }
+    const avg = sd / n, mdx = sx / n, mdy = sy / n, bias = Math.hypot(mdx, mdy);
+    let dir = 'none';
+    if (bias >= 2) dir = Math.abs(mdy) >= Math.abs(mdx) ? (mdy > 0 ? 'below' : 'above') : (mdx > 0 ? 'right' : 'left');
+    return { n, avg: r0(avg), bias: r0(bias), dir, dx: r0(mdx), dy: r0(mdy), max: r0(mx), avgRaw: avg, biasRaw: bias };
+  }
+  function updateHud() {
+    const s = stats();
+    if (done) setHudText(t('calib_free', { avg: s ? s.avg : 0 }));
+    else setHudText(t('calib_hud', { i: Math.min(i + 1, N), n: N, last: last ? r0(last.d) + ' px' : '—', avg: s ? s.avg + ' px' : '—' }));
+  }
+  function begin() { hidePanel(); started = true; updateHud(); }
+  function finish() {
+    const s = stats();
+    if (!s || s.n < 5) { closeTest(); return; }
+    done = true;
+    const status = (s.biasRaw >= 14 || s.avgRaw >= 24) ? 'fail' : (s.biasRaw >= 8 || s.avgRaw >= 15) ? 'warn' : 'pass';
+    const msg = status === 'fail' ? (s.biasRaw >= 14 ? 'm_calib_fail_bias' : 'm_calib_fail_spread') : 'm_calib_' + status;
+    const m = { n: s.n, avg: s.avg, bias: s.bias, dir: s.dir, dx: s.dx, dy: s.dy, max: s.max };
+    updateHud();
+    resultPanel('calib', status, m, msg);
+  }
+  return {
+    init(skip) {
+      targets = makeTargets();
+      setHud({ text: '' });
+      updateHud();
+      if (skip) begin();
+      else introPanel('name_calib', `<p>${esc(t('calib_intro', { n: N }))}</p>`, begin);
+    },
+    finish,
+    debug() { return started && !done && i < N ? pos(i) : null; },
+    down(p, others) {
+      if (!started || done || others > 0 || panelOpen()) return;
+      const [tx, ty] = pos(i);
+      const dx = p.x - tx, dy = p.y - ty, d = Math.hypot(dx, dy);
+      if (d > 150) { flash = { text: t('calib_ignored'), at: performance.now() }; return; }
+      last = { tx, ty, x: p.x, y: p.y, dx, dy, d, at: performance.now() };
+      taps.push(last);
+      i++;
+      updateHud();
+      if (i >= N) setTimeout(() => { if (M && currentId === 'calib' && !done) finish(); }, 450);
+    },
+    draw(now) {
+      ctx.fillStyle = '#0b0d10';
+      ctx.fillRect(0, 0, W, H);
+      for (const tp of taps) {
+        const col = tp.d < 10 ? '#34d399' : tp.d < 20 ? '#fbbf24' : '#f87171';
+        ring(ctx, tp.tx, tp.ty, 5, 'rgba(255,255,255,.3)', 1);
+        seg(ctx, tp.tx, tp.ty, tp.x, tp.y, col, 2);
+        dot(ctx, tp.x, tp.y, 3, col);
+      }
+      if (started && !done && i < N) {
+        const [tx, ty] = pos(i);
+        const pulse = 1 + 0.07 * Math.sin(now / 170);
+        ring(ctx, tx, ty, R * pulse, '#ffffff', 2.5);
+        ring(ctx, tx, ty, R * 1.9, 'rgba(255,255,255,.12)', 1);
+        seg(ctx, tx - 9, ty, tx + 9, ty, '#fff', 1.5);
+        seg(ctx, tx, ty - 9, tx, ty + 9, '#fff', 1.5);
+      }
+      if (last && now - last.at < 1600) {
+        const col = last.d < 10 ? '#34d399' : last.d < 20 ? '#fbbf24' : '#f87171';
+        label(ctx, r0(last.d) + ' px', last.x + 12, last.y + 28, col);
+      }
+      for (const p of P.values()) crosshair(p);
+      if (flash && now - flash.at < 1500) label(ctx, flash.text, W / 2 - 110, H / 2, '#fbbf24');
+    }
+  };
+}
+
+/* ================= mode: coverage grid ================= */
+function Cover() {
+  let cols = 0, rows = 0, cw = 1, ch = 1, grid = null, filled = 0, total = 1, jumps = 0, done = false, started = false, note = null;
+  function build() {
+    const target = 26;
+    cols = Math.max(8, Math.round(W / target));
+    rows = Math.max(8, Math.round(H / target));
+    cw = W / cols; ch = H / rows;
+    grid = new Uint8Array(cols * rows);
+    filled = 0; total = cols * rows;
+  }
+  function mark(x, y) {
+    const c = Math.min(cols - 1, Math.max(0, Math.floor(x / cw)));
+    const r = Math.min(rows - 1, Math.max(0, Math.floor(y / ch)));
+    const k = r * cols + c;
+    if (!grid[k]) { grid[k] = 1; filled++; }
+  }
+  function pct() { return Math.floor(filled * 100 / total); }
+  function updateHud() { setHudText(t('cover_hud', { p: pct(), left: total - filled })); }
+  function begin() { hidePanel(); started = true; updateHud(); }
+  function check() {
+    updateHud();
+    if (filled >= total && !done) { done = true; setTimeout(() => { if (M && currentId === 'cover') finish(); }, 350); }
+  }
+  function finish() {
+    if (!filled) { closeTest(); return; }
+    const status = filled >= total ? 'pass' : 'warn';
+    resultPanel('cover', status, { p: pct(), left: total - filled, jumps }, 'm_cover_' + status);
+  }
+  return {
+    init(skip) {
+      build();
+      setHud({ text: '' });
+      updateHud();
+      if (skip) begin();
+      else introPanel('name_cover', `<p>${esc(t('cover_intro'))}</p><p>${esc(t('cover_intro2'))}</p>`, begin);
+    },
+    finish,
+    onResize() {
+      const had = grid && filled > 0;
+      build(); updateHud();
+      if (had) note = { text: t('cover_rotated'), at: performance.now() };
+    },
+    down(p) { if (!started || panelOpen()) return; mark(p.x, p.y); check(); },
+    move(p, prev) {
+      if (!started || panelOpen()) return;
+      if (isJump(p, prev, 160, 6)) { jumps++; mark(p.x, p.y); check(); return; }
+      const d = Math.hypot(p.x - prev.x, p.y - prev.y);
+      const step = Math.max(2, Math.min(cw, ch) / 2);
+      const n = Math.max(1, Math.ceil(d / step));
+      for (let s = 1; s <= n; s++) mark(prev.x + (p.x - prev.x) * s / n, prev.y + (p.y - prev.y) * s / n);
+      check();
+    },
+    draw(now) {
+      ctx.fillStyle = '#0b0d10';
+      ctx.fillRect(0, 0, W, H);
+      const idle = P.size === 0 && filled > 0;
+      // Cells never reached pulse bright amber whenever the finger is lifted, so they stand out.
+      const a = idle ? 0.55 + 0.4 * (0.5 + 0.5 * Math.sin(now / 220)) : 0.22;
+      const todo = `rgba(251,191,36,${a.toFixed(3)})`;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          ctx.fillStyle = grid[r * cols + c] ? 'rgba(52,211,153,.82)' : todo;
+          ctx.fillRect(c * cw, r * ch, cw, ch);
+        }
+      }
+      ctx.beginPath();
+      for (let c = 1; c < cols; c++) { const x = Math.round(c * cw) + 0.5; ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+      for (let r = 1; r < rows; r++) { const y = Math.round(r * ch) + 0.5; ctx.moveTo(0, y); ctx.lineTo(W, y); }
+      ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 1; ctx.stroke();
+      for (const p of P.values()) { dot(ctx, p.x, p.y, 7, '#fff'); ring(ctx, p.x, p.y, 7, '#0b0d10', 2); }
+      if (note && now - note.at < 2500) label(ctx, note.text, W / 2 - 120, H / 2, '#fff');
+    }
+  };
+}
+
+/* ================= mode: ghost touch, hands off ================= */
+function HandsOff() {
+  let phase = 'ready', dur = 30, graceEnd = 0, endAt = 0, count = 0, moves = 0, pts = [], pre = new Set(), lastSec = -1;
+  function start(d) {
+    dur = d;
+    unlockAudio();
+    requestWake();
+    hidePanel();
+    phase = 'grace';
+    graceEnd = performance.now() + 5000;
+    setHud({ text: '', locked: true });
+    hud.style.pointerEvents = 'none';
+  }
+  function readyPanel() {
+    phase = 'ready';
+    setHud({ text: t('name_handsoff'), btn: 'hud_exit', onBtn: closeTest });
+    introPanel('name_handsoff', `<p>${esc(t('handsoff_intro'))}</p><p>${esc(t('handsoff_intro2'))}</p>`, null, [
+      { label: t('handsoff_30'), primary: true, fn: () => start(30) },
+      { label: t('handsoff_60'), fn: () => start(60) }
+    ]);
+  }
+  function record(p, kind) {
+    if (pts.length < 3000) pts.push({ x: p.x, y: p.y, kind, at: performance.now() });
+  }
+  function end() {
+    phase = 'done';
+    setHud({ text: t('name_handsoff'), btn: 'hud_exit', onBtn: closeTest });
+    beep();
+    const status = count === 0 ? 'pass' : 'fail';
+    resultPanel('handsoff', status, { n: count, s: dur, moves }, 'm_handsoff_' + status);
+  }
+  return {
+    init() { readyPanel(); },
+    finish() { closeTest(); },
+    onHidden() {
+      if (phase === 'grace' || phase === 'run') {
+        phase = 'stopped';
+        setHud({ text: t('name_handsoff'), btn: 'hud_exit', onBtn: closeTest });
+        showPanel({ title: t('handsoff_stopped'), body: `<p>${esc(t('handsoff_hidden'))}</p>`,
+          buttons: [{ label: t('redo'), primary: true, fn: () => openTest('handsoff') }, { label: t('home'), fn: closeTest }] });
+      }
+    },
+    down(p) { if (phase === 'run') { count++; pre.add(p.id); record(p, 'down'); } },
+    move(p) {
+      if (phase !== 'run') return;
+      moves++;
+      // A contact that was already down when counting started still counts once.
+      if (!pre.has(p.id)) { pre.add(p.id); count++; }
+      record(p, 'move');
+    },
+    draw(now) {
+      ctx.fillStyle = phase === 'run' ? '#07080a' : '#0b0d10';
+      ctx.fillRect(0, 0, W, H);
+      if (phase === 'grace') {
+        const s = Math.max(1, Math.ceil((graceEnd - now) / 1000));
+        setHudText(t('handsoff_grace', { s }));
+        ctx.fillStyle = 'rgba(255,255,255,.35)';
+        ctx.font = '700 120px -apple-system,BlinkMacSystemFont,sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(s), W / 2, H / 2);
+        ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+        if (now >= graceEnd) {
+          phase = 'run';
+          endAt = now + dur * 1000; // contacts still down are counted on their next move
+        }
+        return;
+      }
+      if (phase === 'run') {
+        const left = Math.max(0, Math.ceil((endAt - now) / 1000));
+        if (left !== lastSec) lastSec = left;
+        setHudText(t('handsoff_run', { s: left, n: count }));
+        const frac = Math.max(0, (endAt - now) / (dur * 1000));
+        ring(ctx, W / 2, H / 2, Math.min(W, H) * 0.32, 'rgba(255,255,255,.08)', 10);
+        ctx.beginPath();
+        ctx.arc(W / 2, H / 2, Math.min(W, H) * 0.32, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2);
+        ctx.strokeStyle = count ? 'rgba(248,113,113,.7)' : 'rgba(52,211,153,.6)'; ctx.lineWidth = 10; ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,.4)';
+        ctx.font = '700 96px -apple-system,BlinkMacSystemFont,sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(left), W / 2, H / 2);
+        ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+        if (now >= endAt) { hud.style.pointerEvents = ''; end(); }
+      }
+      for (const q of pts) {
+        dot(ctx, q.x, q.y, q.kind === 'down' ? 6 : 2.5, '#f87171');
+        if (q.kind === 'down') {
+          const age = now - q.at;
+          if (age < 900) ring(ctx, q.x, q.y, 6 + age / 20, `rgba(248,113,113,${(1 - age / 900).toFixed(3)})`, 2);
+        }
+      }
+      for (const p of P.values()) if (phase === 'run' || phase === 'done') ring(ctx, p.x, p.y, 10, '#f87171', 2);
+    },
+    dispose() { hud.style.pointerEvents = ''; }
+  };
+}
+
+/* ================= mode: ghost touch, free draw ================= */
+function Draw() {
+  let jumps = 0, extras = 0, drawMs = 0, started = false, marks = [];
+  function activeMs() { let s = 0; for (const p of P.values()) s += Math.max(0, p.t - p.downT); return s; }
+  function secs() { return Math.floor((drawMs + activeMs()) / 1000); }
+  function updateHud() { setHudText(t('draw_hud', { j: jumps, x: extras, s: secs() })); }
+  function reset() { jumps = 0; extras = 0; drawMs = 0; marks = []; lctx.clearRect(0, 0, W, H); updateHud(); }
+  function begin() { hidePanel(); started = true; updateHud(); }
+  function finish() {
+    const s = secs();
+    if (s === 0 && !jumps && !extras) { closeTest(); return; }
+    let status, msg;
+    if (jumps >= 3 || extras >= 3) { status = 'fail'; msg = 'm_draw_fail'; }
+    else if (jumps > 0 || extras > 0) { status = 'warn'; msg = 'm_draw_warn'; }
+    else if (s < 8) { status = 'warn'; msg = 'm_draw_short'; }
+    else { status = 'pass'; msg = 'm_draw_pass'; }
+    resultPanel('draw', status, { s, j: jumps, x: extras }, msg);
+  }
+  return {
+    init(skip) {
+      setHud({ text: '', btn2: 'hud_restart', onBtn2: () => reset() });
+      updateHud();
+      if (skip) begin();
+      else introPanel('name_draw', `<p>${esc(t('draw_intro'))}</p>`, begin);
+    },
+    finish,
+    onResize() { lctx.clearRect(0, 0, W, H); },
+    down(p, others) {
+      if (!started || panelOpen()) return;
+      if (others > 0) { extras++; marks.push({ x: p.x, y: p.y, kind: 'extra' }); ring(lctx, p.x, p.y, 12, '#fb923c', 3); }
+      dot(lctx, p.x, p.y, 2.5, 'rgba(56,214,255,.9)');
+      updateHud();
+    },
+    move(p, prev) {
+      if (!started || panelOpen()) return;
+      if (isJump(p, prev, 80, 3)) {
+        jumps++;
+        lctx.save();
+        lctx.setLineDash([6, 5]);
+        seg(lctx, prev.x, prev.y, p.x, p.y, '#f87171', 2);
+        lctx.restore();
+        ring(lctx, prev.x, prev.y, 8, '#f87171', 2.5);
+        ring(lctx, p.x, p.y, 8, '#f87171', 2.5);
+        marks.push({ x: p.x, y: p.y, kind: 'jump' });
+      } else {
+        lctx.lineCap = 'round';
+        seg(lctx, prev.x, prev.y, p.x, p.y, 'rgba(56,214,255,.9)', 3);
+      }
+      updateHud();
+    },
+    up(p) { drawMs += Math.max(0, p.t - p.downT); updateHud(); },
+    draw() {
+      ctx.fillStyle = '#0b0d10';
+      ctx.fillRect(0, 0, W, H);
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(layer, 0, 0); ctx.restore();
+      for (const p of P.values()) {
+        seg(ctx, p.x - 16, p.y, p.x + 16, p.y, 'rgba(255,255,255,.6)', 1);
+        seg(ctx, p.x, p.y - 16, p.x, p.y + 16, 'rgba(255,255,255,.6)', 1);
+        dot(ctx, p.x, p.y, 5, '#fff');
+      }
+      if (P.size) updateHud();
+    }
+  };
+}
+
+/* ================= mode: display colors ================= */
+function Display() {
+  const C = [['white', '#ffffff', 'hint_white'], ['black', '#000000', 'hint_black'], ['red', '#ff0000', 'hint_rgb'],
+             ['green', '#00ff00', 'hint_rgb'], ['blue', '#0000ff', 'hint_rgb'], ['gray', '#808080', 'hint_gray']];
+  let i = -1, asking = false;
+  function hint() {
+    const c = C[i];
+    showHint(`<b>${i + 1}/${C.length} · ${esc(t('col_' + c[0]))}</b><br>${esc(t(c[2]))}` +
+      `<div class="hint-row"><span>${esc(t('hint_tap'))}</span><button type="button" id="hintExit">${esc(t('hud_exit'))}</button></div>`, 3200);
+    const b = $('#hintExit');
+    if (b) b.addEventListener('click', closeTest);
+  }
+  function begin() { hidePanel(); asking = false; i = 0; hint(); }
+  function ask() {
+    asking = true;
+    hideHint();
+    showPanel({
+      title: t('display_q'), body: `<p>${esc(t('display_q_body'))}</p>`,
+      buttons: [
+        { label: t('display_no'), primary: true, fn: () => resultPanel('display', 'pass', { ok: true }, 'm_display_pass') },
+        { label: t('display_yes'), fn: () => resultPanel('display', 'fail', { ok: false }, 'm_display_fail') },
+        { label: t('display_again'), fn: begin }
+      ]
+    });
+  }
+  return {
+    init(skip) {
+      setHud({ hidden: true });
+      if (skip) begin();
+      else introPanel('name_display', `<p>${esc(t('display_intro'))}</p><p class="small">${esc(t('hint_white'))}</p>`, begin);
+    },
+    finish() { closeTest(); },
+    down(p, others) {
+      if (i < 0 || asking || others > 0 || panelOpen()) return;
+      i++;
+      if (i >= C.length) { i = C.length - 1; ask(); } else hint();
+    },
+    draw() {
+      ctx.fillStyle = i >= 0 ? C[i][1] : '#000';
+      ctx.fillRect(0, 0, W, H);
+    },
+    dispose() { hud.hidden = false; }
+  };
+}
+
+const MODES = { calib: Calib, cover: Cover, handsoff: HandsOff, draw: Draw, display: Display };
+
+/* ================= wiring ================= */
+document.addEventListener('click', e => {
+  const pw = e.target.closest && e.target.closest('[data-power]');
+  if (pw) { setPower(pw.dataset.power); return; }
+  const st = e.target.closest && e.target.closest('[data-start]');
+  if (st) openTest(st.dataset.start);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && M) closeTest(); });
+$('#langBtn').addEventListener('click', toggleLang);
+$('#langBtn2').addEventListener('click', toggleLang);
+$('#toSummary').addEventListener('click', () => { show('summary'); renderSummary(); $('#copyMsg').textContent = ''; });
+$('#sumBack').addEventListener('click', () => { show('home'); renderHome(); });
+$('#copyBtn').addEventListener('click', async () => {
+  const txt = summaryText();
+  let ok = false;
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(txt); ok = true; } } catch (e) { ok = false; }
+  if (!ok) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length);
+      ok = document.execCommand('copy');
+      ta.remove();
+    } catch (e) { ok = false; }
+  }
+  $('#copyMsg').textContent = ok ? t('copied') : t('copy_fail');
+});
+$('#shareBtn').addEventListener('click', async () => {
+  try { await navigator.share({ title: t('txt_header'), text: summaryText() }); } catch (e) {}
+});
+$('#clearBtn').addEventListener('click', () => {
+  S.results = {}; ss.del('lacre.tt.results'); persist(); renderSummary(); $('#copyMsg').textContent = t('cleared');
+});
+
+applyI18n();
+
+// Test hook (no effect on behavior): lets automated checks read state.
+window.__lacreTouch = { state: S, get mode() { return currentId; }, get size() { return [W, H]; }, get debug() { return M && M.debug ? M.debug() : null; } };
+})();
+</script>
+</body>
+</html>
