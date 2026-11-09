@@ -7,7 +7,7 @@ peças que não batem com o que a Apple registrou na fábrica.
 
 [English](README.md)
 
-![O Lacre mostrando o resultado de uma conferência](docs/screenshot.png)
+![O Lacre mostrando o resultado de uma conferência](docs/screenshot.pt-BR.png)
 
 ## Baixar
 
