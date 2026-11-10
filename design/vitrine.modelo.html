@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Lacre: vitrine do design system</title>
+<style>
+/*TOKENS*/
+</style>
+<style>
+/*APP-CSS*/
+</style>
+<style>
+/* chrome da vitrine (só a moldura; nada disto vai para o app) */
+.vit { max-width: 1180px; margin: 0 auto; padding: 24px 24px 80px; }
+.vit-topo { display: grid; gap: 6px; margin-bottom: 24px; }
+.vit-topo h1 { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; }
+.vit-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; padding: 0; list-style: none; }
+.vit-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; }
+.vit h2 { font-size: 22px; font-weight: 650; margin: 40px 0 6px; letter-spacing: -0.01em; }
+.vit h3 { font-size: 15px; font-weight: 650; margin: 22px 0 8px; color: var(--ink-2); }
+.vit-nota { color: var(--ink-2); max-width: 70ch; margin: 0 0 14px; }
+.vit-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+.vit-cor { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.vit-cor-amostra { height: 52px; border-bottom: 1px solid var(--line); }
+.vit-cor-nome { padding: 6px 10px 8px; font-size: 12.5px; }
+.vit-cor-nome code { display: block; font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+.vit-cor-nome span { color: var(--ink-2); }
+.vit-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 10px; }
+.vit-caixa { padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); margin-bottom: 14px; }
+.vit-moldura { border: 1px solid var(--line-strong); border-radius: 18px; background: var(--bg); padding: 0 0 8px; overflow: hidden; margin-bottom: 8px; }
+.vit-moldura .topbar, .vit-moldura .sidenav { position: static; }
+.vit-moldura .screen-center, .vit-moldura .connect { min-height: 0; }
+.vit-moldura .main { padding-top: 24px; }
+.vit-rotulo { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; margin: 28px 0 8px; }
+.vit-rotulo h3 { margin: 0; color: var(--ink); }
+.vit-rotulo code { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+.vit-amostra-tipo { margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<div class="vit">
+  <header class="vit-topo">
+    <h1>Lacre: vitrine do design system</h1>
+    <p class="vit-nota">Tokens, componentes e telas do app como ele é hoje. As telas abaixo são o HTML real do app em modo exemplo (dados
+    fictícios do próprio repositório), capturado por <code>design/capturar-telas.cjs</code>; os estilos são os de
+    <code>ui/src/styles.css</code> embutidos aqui. Claro e escuro seguem o tema do sistema. Regerar: <code>node design/montar-vitrine.cjs</code>.</p>
+    <ul class="vit-nav">
+      <li><a href="#tokens">Tokens</a></li>
+      <li><a href="#componentes">Componentes</a></li>
+      <li><a href="#telas">Telas e estados</a></li>
+    </ul>
+  </header>
+
+  <section id="tokens">
+    <h2>Tokens</h2>
+    <p class="vit-nota">Cor, sombra e fonte moram em <code>design/tokens.css</code> (fonte única, lida por <code>@import</code>).
+    As amostras abaixo usam <code>var(--token)</code>, então mudam com o tema. Espaço, raio e tamanho de letra ainda são px literais no CSS do app (ver DESIGN.md, Migração).</p>
+    <!--TOKENS-COR-->
+    <h3>Letra</h3>
+    <p class="vit-amostra-tipo" style="font-family: var(--font-display); font-size: 28px; font-weight: 650;">--font-display: títulos e número do veredito</p>
+    <p class="vit-amostra-tipo" style="font-family: var(--font); font-size: 15px;">--font: texto corrido da interface, 15 px com entrelinha de 1,5</p>
+    <p class="vit-amostra-tipo mono">--mono: valores técnicos (série, chave) em 13 px</p>
+    <h3>Sombra</h3>
+    <div class="vit-linha">
+      <div class="vit-caixa" style="background: var(--surface); box-shadow: var(--shadow); min-width: 200px;">--shadow</div>
+      <div class="vit-caixa" style="background: var(--surface); box-shadow: var(--shadow-pill); min-width: 200px;">--shadow-pill</div>
+      <div class="vit-cor" style="min-width: 200px;"><div class="vit-cor-amostra" style="background: var(--paper);"></div><div class="vit-cor-nome"><code>--paper</code><span>branco fixo, não muda com o tema</span></div></div>
+    </div>
+  </section>
+
+  <section id="componentes">
+    <h2>Componentes</h2>
+    <p class="vit-nota">Cada peça isolada, com os estados. O contexto de uso está nas telas, mais abaixo.</p>
+
+    <h3>Marca e barra do topo</h3>
+    <div class="vit-caixa">
+      <header class="topbar" style="position: static;">
+        <div class="brand">
+          <svg class="brand-svg" viewBox="0 0 100 100" aria-hidden="true"><circle class="brand-body" cx="50" cy="50" r="46"/><path class="brand-glyph" d="M32 51l12 12 24-26" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="brand-name">Lacre</span>
+          <span class="brand-tagline">Confira um iPhone usado antes de comprar</span>
+        </div>
+        <div class="topbar-end">
+          <span class="mock-badge">modo exemplo</span>
+          <div class="lang" role="group" aria-label="Idioma"><button type="button" class="lang-btn" aria-pressed="true">PT</button><button type="button" class="lang-btn" aria-pressed="false">EN</button></div>
+        </div>
+      </header>
+    </div>
+
+    <h3>Botões</h3>
+    <div class="vit-caixa">
+      <div class="vit-linha">
+        <button type="button" class="btn btn-primary">Primário</button>
+        <button type="button" class="btn btn-primary" disabled>Primário desativado</button>
+        <button type="button" class="btn btn-secondary">Secundário</button>
+        <button type="button" class="btn btn-secondary" disabled>Secundário desativado</button>
+        <button type="button" class="btn btn-secondary" aria-disabled="true">Secundário (aria-disabled)</button>
+        <button type="button" class="btn btn-quiet">Discreto</button>
+        <button type="button" class="btn btn-quiet is-armed">Discreto armado</button>
+        <button type="button" class="btn btn-quiet" disabled>Discreto desativado</button>
+        <button type="button" class="btn btn-primary btn-large">Primário grande</button>
+      </div>
+      <div class="vit-linha"><a class="skip" href="#tokens" style="position: static;">Atalho: ir para o conteúdo</a><span class="vit-nota">(o atalho só aparece com o foco do teclado no app)</span></div>
+    </div>
+
+    <h3>Etiquetas de situação</h3>
+    <div class="vit-caixa vit-linha">
+      <span class="chip chip-ok"><svg class="chip-dot" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="currentColor"/></svg>Confere</span>
+      <span class="chip chip-warn"><svg class="chip-dot" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="currentColor"/></svg>Atenção</span>
+      <span class="chip chip-alert"><svg class="chip-dot" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="currentColor"/></svg>Problema</span>
+      <span class="chip chip-na"><svg class="chip-dot" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="currentColor"/></svg>Sem dado</span>
+      <span class="nav-dot dot-ok"></span><span class="nav-dot dot-warn"></span><span class="nav-dot dot-alert"></span>
+    </div>
+
+    <h3>Carregando e progresso</h3>
+    <div class="vit-caixa">
+      <div class="vit-linha"><span class="spinner"></span><span class="spinner small"></span><span class="spinner tiny"></span></div>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><span style="width:60%"></span></div>
+      <ol class="steps"><li>Primeiro passo, numerado</li><li>Segundo passo</li><li>Terceiro passo</li></ol>
+    </div>
+
+    <h3>Avisos (callouts)</h3>
+    <div class="vit-caixa">
+      <div class="callout callout-alert" role="alert"><p class="callout-title">Algo deu errado</p><p>O texto explica o que fazer em seguida.</p><p class="mono small">codigo: detalhe técnico</p><div class="actions"><button type="button" class="btn btn-secondary">Tentar de novo</button></div></div>
+      <div class="callout callout-warn"><p class="callout-title">A conexão caiu</p><p>Estamos retomando sozinhos.</p></div>
+      <div class="callout callout-info"><p>Aviso neutro com ícone opcional.</p></div>
+      <div class="callout callout-wall"><p>Aviso de destaque na cor do selo.</p></div>
+    </div>
+
+    <h3>Cartões de chamada e avisos do resultado</h3>
+    <div class="vit-caixa">
+      <div class="cta"><p class="cta-title">Quer conferir a fábrica?</p><p>Leva alguns minutos e confirma as peças originais.</p><div class="actions"><button type="button" class="btn btn-primary">Começar</button></div></div>
+      <div class="notices"><p class="notices-title">Antes de decidir</p><ul><li>Primeiro aviso.</li><li>Segundo aviso.</li></ul></div>
+      <div class="next"><p>Texto de próximo passo, separado por uma linha.</p></div>
+    </div>
+
+    <h3>Lista de itens e pares chave-valor</h3>
+    <div class="vit-caixa">
+      <div class="block"><h2 class="block-title" style="margin-top:0;">Título de bloco</h2><p class="block-note">Nota explicando o bloco.</p><p class="block-sub">Subtítulo pequeno</p>
+        <ul class="list">
+          <li class="row row-ok"><span class="chip chip-ok"><svg class="chip-dot" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="currentColor"/></svg>Confere</span><div class="row-body"><p class="row-title">Título da linha</p><p class="row-text">Texto de apoio da linha.</p><dl class="tech"><dt>série</dt><dd>EXEMPLO123</dd></dl></div></li>
+          <li class="row row-warn"><span class="chip chip-warn"><svg class="chip-dot" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="currentColor"/></svg>Atenção</span><div class="row-body"><p class="row-title">Linha com atenção</p></div></li>
+        </ul></div>
+      <dl class="kv list"><div class="kv-row"><dt class="kv-k">Modelo</dt><dd>iPhone de exemplo</dd></div><div class="kv-row"><dt>Sistema</dt><dd>iOS 26</dd></div></dl>
+    </div>
+
+    <h3>Veredito (a única peça "alta" da tela de resultado)</h3>
+    <!--VEREDITOS-->
+
+    <h3>Seletores</h3>
+    <div class="vit-caixa vit-linha">
+      <div class="seg" role="group"><button type="button" class="seg-btn seg-pass" aria-pressed="true">Passou</button><button type="button" class="seg-btn seg-fail" aria-pressed="false">Falhou</button><button type="button" class="seg-btn seg-skip" aria-pressed="false">Pular</button></div>
+      <div class="seg" role="group"><button type="button" class="seg-btn seg-pass" aria-pressed="false">Passou</button><button type="button" class="seg-btn seg-fail" aria-pressed="true">Falhou</button><button type="button" class="seg-btn seg-skip" aria-pressed="false">Pular</button></div>
+      <div class="seg" role="group"><button type="button" class="seg-btn seg-pass" aria-pressed="false">Passou</button><button type="button" class="seg-btn seg-fail" aria-pressed="false">Falhou</button><button type="button" class="seg-btn seg-skip" aria-pressed="true">Pular</button></div>
+    </div>
+  </section>
+
+  <section id="telas">
+    <h2>Telas e estados</h2>
+    <p class="vit-nota">Cada quadro é uma tela do app com dados de exemplo. Os controles aqui são só desenho: não fazem nada.</p>
+    <!--QUADROS-->
+  </section>
+</div>
+</body>
+</html>
