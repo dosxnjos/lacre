@@ -1,6 +1,6 @@
 import { h, svg } from "../dom";
 import { t } from "../i18n";
-import { icons } from "../art";
+import { icons } from "../icons";
 import type { Ctx } from "../state";
 import { button, noteLine } from "./common";
 import { checkStats } from "./tests";

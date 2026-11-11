@@ -1,8 +1,8 @@
 // Screens before the results: startup, prerequisites, connect, reading.
 import { h, svg } from "../dom";
 import { t } from "../i18n";
-import { connectArt, icons } from "../art";
-import { statusIcon } from "../icons";
+import { connectArt } from "../art";
+import { icons, statusIcon } from "../icons";
 import { modelName } from "../models";
 import type { Ctx } from "../state";
 import { READ_STEPS } from "../types";
