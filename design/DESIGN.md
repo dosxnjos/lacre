@@ -178,11 +178,20 @@ Ritmo: vãos de 8/10/12/14/18/24 px, margens de bloco de 34 px; o espaço **aind
 Quase plano: profundidade por **camada tonal** (fundo → superfície → superfície 2) e contorno de 1 px; sombra só em cartão de seleção (`--shadow`, dupla: contato + ambiente) e no botão "apertado" dos seletores (`--shadow-pill`). A barra do topo usa `backdrop-filter` com 82% de opacidade do fundo.
 
 ### Named Rules
-**A Regra do Plano por Padrão.** Superfície em repouso é plana; sombra aparece como resposta (selecionado, apertado).
+**A Regra do Plano por Padrão.** Superfície em repouso é plana; sombra aparece como resposta (selecionado, apertado, hover do botão primário).
 
 ## Shapes
 
 Cantos generosos e crescentes com o tamanho do elemento: botão 10 px (grande 12), aviso e aparelho 14, lista e cartão 16, chamada 18, veredito 22; etiqueta e seletor em pílula (999 px / 10 px). Selo do veredito: a "etiqueta de garantia" com borda ondulada (SVG próprio); o carimbo entra girando 14° em 0,5 s (some com movimento reduzido).
+
+## Motion
+
+**A Regra da Vida (mantenedor, 11/11/2026).** Todo botão e controle responde ao ponteiro com movimento curto: botão sobe 1 px no
+hover (o primário ganha `--shadow`) e afunda para `translateY(1px) scale(0.98)` ao pressionar; seletores (`.lang-btn`, `.seg-btn`)
+encolhem para 0,94 no clique; `.nav-item` desliza 2 px; `.device` sobe 2 px; a seta de "como testar" anda 2 px. Duração 0,12 s
+(posição) e 0,15 s (cor). A cor muda sempre; o movimento mora só em `@media (prefers-reduced-motion: no-preference)`, porque o
+bloco `reduce` só zera durações (um `transform` fora dele ainda salta). Desativado (`:disabled`, `aria-disabled`) não se move.
+Prova: `node design/testar-movimento.cjs`.
 
 ## Components
 
@@ -193,7 +202,8 @@ Botões (`.btn-primary`, `-secondary`, `-quiet`, `-large`; desativado; "armado" 
 ### Do:
 - **Do** usar `var(--token)` para toda cor; criar token novo em `design/tokens.css` se faltar.
 - **Do** dar a cada estado ícone ou texto além da cor (o app já faz: etiqueta, selo).
-- **Do** usar Lucide para todo ícone novo (o pacote do projeto; na vitrine standalone, SVG inline do `lucide-static`), com `stroke="currentColor"`, traço de 2 e o mesmo tamanho em todo o app. Decorativo: `aria-hidden="true"`; único conteúdo de um botão: `aria-label`. Hoje o app só tem arte própria (selo, marca, aparelho), nenhum emoji.
+- **Do** usar Lucide para todo ícone novo (o pacote do projeto; na vitrine standalone, SVG inline do `lucide-static`), com `stroke="currentColor"`, traço de 2 e o mesmo tamanho em todo o app. Decorativo: `aria-hidden="true"`; único conteúdo de um botão: `aria-label`. No app: `lucide-static` (versão exata), um arquivo por ícone com `?raw` em `ui/src/icons.ts`; a situação tem forma própria (`statusIcon`: check, triangle-alert, circle-x, circle-minus) na etiqueta, no item "Resultado" da navegação, no título dos avisos de erro/atenção, na nota de exportar/apagar e em "iPhone encontrado". Arte própria só no selo, na marca e nos desenhos do aparelho (`ui/src/art.ts`).
+- **Do** dar vida a todo controle (Regra da Vida, abaixo).
 - **Do** manter um único elemento alto por tela.
 - **Do** regerar `design/quadros.json` e `design/vitrine.html` quando uma tela mudar (`design/montar-vitrine.cjs`).
 
@@ -205,7 +215,7 @@ Botões (`.btn-primary`, `-secondary`, `-quiet`, `-large`; desativado; "armado" 
 
 ## Cobertura da vitrine
 
-- `design/vitrine.html`: **204 de 204 classes** de CSS (as 196 do app mais 8 da moldura da vitrine) aparecem em algum elemento (script `design/cobertura-classes.cjs`); 25 telas e estados capturados do app em modo exemplo, mais os componentes isolados.
+- `design/vitrine.html`: **208 de 208 classes** de CSS (as do app mais as da moldura da vitrine) aparecem em algum elemento (script `design/cobertura-classes.cjs`); 25 telas e estados capturados do app em modo exemplo, mais os componentes isolados.
 - Controles que respondem ao clique (script embutido no `vitrine.modelo.html`): botão "Tema" (sistema, claro, escuro; gerado de `tokens.css`), seletores de idioma e passou/falhou/pular e botão discreto "armado", na seção Componentes. O resto é desenho. Prova: `node design/testar-vitrine.cjs` (Playwright por servidor local).
 - O veredito **amarelo** é derivado do verde (o modo exemplo do app não produz amarelo); a marcação é a mesma, muda só a classe.
 
