@@ -1,71 +1,7 @@
 /* Lacre / Seal Check. System fonts only (no network). Light and dark follow the OS. */
 
-:root {
-  color-scheme: light dark;
-  --bg: #eef1f4;
-  --bg-deep: #e3e8ed;
-  --surface: #ffffff;
-  --surface-2: #f5f7f9;
-  --ink: #15202b;
-  --ink-2: #47545f;
-  --ink-3: #7a8793;
-  --line: #dbe1e7;
-  --line-strong: #c5cdd5;
-  --seal: #0f5f73;
-  --seal-hover: #0c5162;
-  --seal-ink: #ffffff;
-  --seal-tint: #e2eff2;
-  --ok: #1b7548;
-  --ok-bg: #e2f2e9;
-  --ok-line: #bfe0cc;
-  --warn: #8f5400;
-  --warn-bg: #fbf0d9;
-  --warn-line: #efd6a3;
-  --alert: #b0281d;
-  --alert-bg: #fce7e4;
-  --alert-line: #f2c3bc;
-  --na: #56636f;
-  --na-bg: #e9edf1;
-  --na-line: #d3dae1;
-  --focus: #2f8aa3;
-  --shadow: 0 1px 2px rgba(21, 32, 43, 0.06), 0 6px 24px -12px rgba(21, 32, 43, 0.18);
-
-  --font: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f1418;
-    --bg-deep: #0b0f12;
-    --surface: #172027;
-    --surface-2: #1d2730;
-    --ink: #e8edf1;
-    --ink-2: #aab6c1;
-    --ink-3: #7d8a96;
-    --line: #26323c;
-    --line-strong: #34424e;
-    --seal: #5db6c8;
-    --seal-hover: #78c5d4;
-    --seal-ink: #08262e;
-    --seal-tint: #13303a;
-    --ok: #62cf90;
-    --ok-bg: #133022;
-    --ok-line: #1d4a33;
-    --warn: #f0b95a;
-    --warn-bg: #33270f;
-    --warn-line: #4f3c14;
-    --alert: #ff8b7c;
-    --alert-bg: #3a1916;
-    --alert-line: #5a2621;
-    --na: #a3afba;
-    --na-bg: #222c35;
-    --na-line: #2f3b46;
-    --focus: #7fd0df;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px -14px rgba(0, 0, 0, 0.6);
-  }
-}
+/* Tokens (cor, sombra, fonte) moram em design/tokens.css: fonte única. Cor nova entra lá, nunca literal aqui. */
+@import "../../design/tokens.css";
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -112,7 +48,7 @@ button { font: inherit; color: inherit; }
 .mock-badge { font-size: 12px; color: var(--warn); background: var(--warn-bg); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
 .lang { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--bg-deep); border: 1px solid var(--line); }
 .lang-btn { border: 0; background: transparent; padding: 4px 11px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
-.lang-btn[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.lang-btn[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-pill); }
 
 /* ------------------------------------------------------------- generic layout */
 .main { padding: 32px 24px 72px; }
@@ -159,7 +95,7 @@ button { font: inherit; color: inherit; }
 .starting { display: flex; align-items: center; gap: 14px; color: var(--ink-2); }
 .starting p { margin: 0; }
 
-.bar { height: 6px; border-radius: 99px; background: var(--bg-deep); overflow: hidden; margin: 4px 0 20px; }
+.bar { height: 6px; border-radius: 999px; background: var(--bg-deep); overflow: hidden; margin: 4px 0 20px; }
 .bar span { display: block; height: 100%; background: var(--seal); border-radius: inherit; transition: width 0.4s ease; }
 
 .progress-steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
@@ -212,7 +148,7 @@ button { font: inherit; color: inherit; }
 .a-btn { fill: var(--seal); }
 .a-btn-idle { fill: var(--ink-3); }
 .a-press path { stroke: var(--seal); stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.a-flash { fill: #fff; opacity: 0; animation: flash 3s ease-out infinite; }
+.a-flash { fill: var(--paper); opacity: 0; animation: flash 3s ease-out infinite; }
 .a-label { font: 500 12.5px var(--font); fill: var(--ink-2); }
 .a-caption { font: 650 14px var(--font); fill: var(--ink); }
 .art-buttons .a-btn, .art-buttons .a-press { animation: press 3s ease-in-out infinite; transform-box: fill-box; }
@@ -354,7 +290,7 @@ button { font: inherit; color: inherit; }
 .tests-progress .bar { margin-bottom: 0; }
 .touch-aids { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 14px; margin-bottom: 14px; }
 .qr-card { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 14px; padding: 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); align-items: start; }
-.qr-code { width: 116px; height: 116px; padding: 6px; background: #fff; border-radius: 10px; line-height: 0; }
+.qr-code { width: 116px; height: 116px; padding: 6px; background: var(--paper); border-radius: 10px; line-height: 0; }
 .qr-code svg { width: 100%; height: 100%; }
 .qr-title { font-size: 15px; font-weight: 650; margin-bottom: 4px; }
 .qr-body p { font-size: 13.5px; color: var(--ink-2); margin-bottom: 6px; }
@@ -374,7 +310,7 @@ button { font: inherit; color: inherit; }
 .seg-btn:hover { color: var(--ink); }
 .seg-pass[aria-pressed="true"] { background: var(--ok); color: var(--surface); }
 .seg-fail[aria-pressed="true"] { background: var(--alert); color: var(--surface); }
-.seg-skip[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.seg-skip[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-pill); }
 
 /* ------------------------------------------------------------- report */
 .export-note { margin-top: 14px; font-size: 14px; }
@@ -420,4 +356,4 @@ button { font: inherit; color: inherit; }
 }
 
 /* Example (demo) entry on the connect screen */
-.demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line, rgba(127,127,127,.2)); font-size: 13.5px; }
+.demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13.5px; }

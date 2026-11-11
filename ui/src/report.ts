@@ -3,6 +3,7 @@ import { esc } from "./dom";
 import { formatDate, formatSealDate, fx, getLang, msg, t } from "./i18n";
 import { CHECKLIST, GROUPS } from "./checklist";
 import { localizeModel, modelSlug } from "./models";
+import { reportPalette } from "./report-palette";
 import type { State } from "./state";
 import type { Analysis, Section, Status } from "./types";
 import { itemText, itemTitle, techPairs } from "./views/common";
@@ -41,10 +42,7 @@ function deviceRows(s: State): [string, string][] {
 }
 
 const CSS = `
-:root{color-scheme:light dark;--bg:#eef1f4;--card:#fff;--tx:#15202b;--mut:#56636f;--ln:#dde3e9;
---ok:#1c7a4b;--ok-bg:#e3f3ea;--warn:#8f5400;--warn-bg:#fbf0da;--alert:#b42a1f;--alert-bg:#fce8e5;--na:#56636f;--na-bg:#eceff2}
-@media (prefers-color-scheme:dark){:root{--bg:#101519;--card:#182027;--tx:#e8edf1;--mut:#a9b5c0;--ln:#2a3540;
---ok:#5bcb8a;--ok-bg:#14301f;--warn:#f0b95a;--warn-bg:#33270f;--alert:#ff8a7a;--alert-bg:#3a1a16;--na:#a3afba;--na-bg:#232d36}}
+${reportPalette()}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);
 font:15px/1.5 "Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif}
 main{max-width:820px;margin:0 auto;padding:32px 20px 64px}
@@ -66,7 +64,7 @@ td.c{width:1%;white-space:nowrap}.t{font-weight:600;margin:0}.x{color:var(--mut)
 .tech{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--mut);margin-top:4px;word-break:break-all}
 .notices{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:6px 20px}
 .disc{border-top:1px solid var(--ln);margin-top:36px;padding-top:16px;font-size:13px;color:var(--mut)}
-@media print{body{background:#fff}.card,.notices{border-color:#ccc}}
+@media print{body{background:var(--paper)}.card,.notices{border-color:var(--rule)}}
 `;
 
 export function buildHtml(s: State): string {

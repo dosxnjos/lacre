@@ -1,0 +1,75 @@
+/* Lacre / Seal Check: tokens de cor, sombra e fonte (FONTE ÚNICA; a UI os lê por `@import` em ui/src/styles.css).
+   Claro e escuro seguem o sistema (prefers-color-scheme). Só fontes do sistema (nada de rede).
+   Regra: cor nova só entra aqui, nunca literal no CSS. Hexadecimal/rgb() só neste arquivo.
+   Espaço, raio e tamanho de letra ainda são px literais em styles.css (não viraram token; ver design/DESIGN.md § Migração). */
+
+:root {
+  color-scheme: light dark;
+  --bg: #eef1f4;
+  --bg-deep: #e3e8ed;
+  --surface: #ffffff;
+  --surface-2: #f5f7f9;
+  --ink: #15202b;
+  --ink-2: #47545f;
+  --ink-3: #7a8793;
+  --line: #dbe1e7;
+  --line-strong: #c5cdd5;
+  --seal: #0f5f73;
+  --seal-hover: #0c5162;
+  --seal-ink: #ffffff;
+  --seal-tint: #e2eff2;
+  --ok: #1b7548;
+  --ok-bg: #e2f2e9;
+  --ok-line: #bfe0cc;
+  --warn: #8f5400;
+  --warn-bg: #fbf0d9;
+  --warn-line: #efd6a3;
+  --alert: #b0281d;
+  --alert-bg: #fce7e4;
+  --alert-line: #f2c3bc;
+  --na: #56636f;
+  --na-bg: #e9edf1;
+  --na-line: #d3dae1;
+  --focus: #2f8aa3;
+  --shadow: 0 1px 2px rgba(21, 32, 43, 0.06), 0 6px 24px -12px rgba(21, 32, 43, 0.18);
+  /* branco fixo (não muda com o tema): clarão da animação e fundo do QR code (precisa de contraste para a câmera) */
+  --paper: #ffffff;
+  /* sombra do botão "apertado" dos seletores (idioma, passou/falhou/pulou) */
+  --shadow-pill: 0 1px 2px rgba(0, 0, 0, 0.12);
+
+  --font: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1418;
+    --bg-deep: #0b0f12;
+    --surface: #172027;
+    --surface-2: #1d2730;
+    --ink: #e8edf1;
+    --ink-2: #aab6c1;
+    --ink-3: #7d8a96;
+    --line: #26323c;
+    --line-strong: #34424e;
+    --seal: #5db6c8;
+    --seal-hover: #78c5d4;
+    --seal-ink: #08262e;
+    --seal-tint: #13303a;
+    --ok: #62cf90;
+    --ok-bg: #133022;
+    --ok-line: #1d4a33;
+    --warn: #f0b95a;
+    --warn-bg: #33270f;
+    --warn-line: #4f3c14;
+    --alert: #ff8b7c;
+    --alert-bg: #3a1916;
+    --alert-line: #5a2621;
+    --na: #a3afba;
+    --na-bg: #222c35;
+    --na-line: #2f3b46;
+    --focus: #7fd0df;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px -14px rgba(0, 0, 0, 0.6);
+  }
+}
