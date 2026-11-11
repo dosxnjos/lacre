@@ -4,7 +4,8 @@ import { buttonsArt, icons } from "../art";
 import type { Ctx } from "../state";
 import { FDR_STAGES, progressStage } from "../types";
 import { oldArchivesBlock } from "./archives";
-import { button, errorBox, itemRow, list } from "./common";
+import { icons as lucide } from "../icons";
+import { button, calloutTitle, errorBox, itemRow, list } from "./common";
 import { sectionById } from "./results";
 
 export function elapsedText(startedAt: number | null, until: number | null = null): string {
@@ -61,7 +62,7 @@ function stageList(s: Ctx["s"]): HTMLElement {
 export function lostNotice(openFactory?: () => void): HTMLElement {
   const d = t().fdr.lost;
   return h("div", { class: "callout callout-warn" },
-    h("p", { class: "callout-title" }, d.title),
+    calloutTitle(lucide.triangleAlert, d.title),
     h("p", null, openFactory ? d.elsewhere : d.text),
     openFactory ? h("div", { class: "actions" }, button(d.open, openFactory, "secondary", { "data-fk": "fdr-lost-open" })) : null,
   );
@@ -119,8 +120,8 @@ export function factoryView({ s, act }: Ctx): HTMLElement {
   return h("div", { class: "factory" },
     head,
     f.status === "failed" && f.error ? errorBox(String(f.error.code), f.error.detail, s.showTech) : null,
-    maybeLeft ? h("div", { class: "callout callout-info" }, h("p", null, d.cleanupLater)) : null,
-    f.status === "cancelled" ? h("div", { class: "callout callout-info", role: "status" }, h("p", null, d.cancelled)) : null,
+    maybeLeft ? h("div", { class: "callout callout-info" }, svg(lucide.info, "fact-icon"), h("p", null, d.cleanupLater)) : null,
+    f.status === "cancelled" ? h("div", { class: "callout callout-info", role: "status" }, svg(lucide.info, "fact-icon"), h("p", null, d.cancelled)) : null,
     facts(),
     howTo(h("div", { class: "actions start" }, button(f.status === "idle" ? d.start : t().common.retry, act.startFdr, "primary", { class: "btn btn-primary btn-large" }))),
   );

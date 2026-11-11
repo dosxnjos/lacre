@@ -3,6 +3,7 @@ import { getBackend, toEngineError } from "./backend";
 import { h, svg } from "./dom";
 import { normalizeLang, setLang, systemLang, t } from "./i18n";
 import { brandMark, icons } from "./art";
+import { statusIcon } from "./icons";
 import { localizeModel } from "./models";
 import { buildHtml, buildTxt, reportFileName } from "./report";
 import { initialState, type Actions, type Ctx, type State, type Tab } from "./state";
@@ -89,7 +90,7 @@ function sideNav(): HTMLElement {
   const a = s.analysis!;
   const st = checkStats(s);
   const tabs: [Tab, string, HTMLElement | null][] = [
-    ["results", d.nav.results, h("span", { class: `nav-dot dot-${a.verdict.status}`, "aria-hidden": "true" })],
+    ["results", d.nav.results, svg(statusIcon(a.verdict.status), `nav-status nav-status-${a.verdict.status}`)],
     ["factory", d.nav.factory,
       s.fdr.status === "running"
         ? h("span", { class: "nav-meta tabular", id: "nav-fdr-meta" }, fdrNavMeta())

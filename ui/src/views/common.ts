@@ -1,13 +1,24 @@
 import { h, svg } from "../dom";
 import { msg, t } from "../i18n";
-import { icons } from "../art";
+import { icons, noteIcon, statusIcon } from "../icons";
+import type { Note } from "../state";
 import type { Item, Status } from "../types";
 
 /** Params that are identifiers or raw values: shown only with "technical details". */
 export const TECH_KEYS = ["serial", "key", "sealed", "live", "detail", "value", "prefix", "source"];
 
 export function chip(status: Status): HTMLElement {
-  return h("span", { class: `chip chip-${status}` }, svg(icons.dot, "chip-dot"), t().status[status]);
+  return h("span", { class: `chip chip-${status}` }, svg(statusIcon(status), "chip-icon"), t().status[status]);
+}
+
+/** Title line of a warning or error box: the situation icon before the text. */
+export function calloutTitle(icon: string, text: string): HTMLElement {
+  return h("p", { class: "callout-title" }, svg(icon, "callout-icon"), h("span", null, text));
+}
+
+/** One-line result under a button (export, delete), with the icon of its outcome. */
+export function noteLine(note: Note, extra: Record<string, string> = {}): HTMLElement {
+  return h("p", { class: `export-note note-${note.kind}`, role: "status", ...extra }, svg(noteIcon(note.kind), "note-icon"), h("span", null, note.text));
 }
 
 export function itemTitle(it: Item): string {
@@ -57,7 +68,7 @@ export function errorText(code: string): { title: string; text: string } {
 export function errorBox(code: string, detail: string, showTech: boolean, onRetry?: () => void): HTMLElement {
   const e = errorText(code);
   return h("div", { class: "callout callout-alert", role: "alert" },
-    h("p", { class: "callout-title" }, e.title),
+    calloutTitle(icons.circleX, e.title),
     h("p", null, e.text),
     showTech && detail ? h("p", { class: "mono small" }, detail) : null,
     onRetry ? h("div", { class: "actions" }, button(t().common.retry, onRetry, "secondary")) : null,
