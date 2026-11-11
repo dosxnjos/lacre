@@ -193,17 +193,20 @@ Botões (`.btn-primary`, `-secondary`, `-quiet`, `-large`; desativado; "armado" 
 ### Do:
 - **Do** usar `var(--token)` para toda cor; criar token novo em `design/tokens.css` se faltar.
 - **Do** dar a cada estado ícone ou texto além da cor (o app já faz: etiqueta, selo).
+- **Do** usar Lucide para todo ícone novo (o pacote do projeto; na vitrine standalone, SVG inline do `lucide-static`), com `stroke="currentColor"`, traço de 2 e o mesmo tamanho em todo o app. Decorativo: `aria-hidden="true"`; único conteúdo de um botão: `aria-label`. Hoje o app só tem arte própria (selo, marca, aparelho), nenhum emoji.
 - **Do** manter um único elemento alto por tela.
 - **Do** regerar `design/quadros.json` e `design/vitrine.html` quando uma tela mudar (`design/montar-vitrine.cjs`).
 
 ### Don't:
+- **Don't** usar emoji como ícone, na interface ou no relatório exportado: ícone é Lucide, nunca emoji (emoji dentro de texto do usuário ou de dado não conta).
 - **Don't** usar fonte baixada, CDN ou imagem externa (o app nunca fala com a rede).
 - **Don't** usar o logotipo, a fonte ou os ícones da Apple; "iPhone" só descreve o aparelho, não é nome do app.
 - **Don't** pôr dado real de aparelho (série, IMEI, UDID) em exemplo, mock ou vitrine: o repositório é público.
 
 ## Cobertura da vitrine
 
-- `design/vitrine.html`: **196 de 196 classes** de CSS do app aparecem em algum elemento (script `design/cobertura-classes.cjs`); 25 telas e estados capturados do app em modo exemplo, mais os componentes isolados.
+- `design/vitrine.html`: **204 de 204 classes** de CSS (as 196 do app mais 8 da moldura da vitrine) aparecem em algum elemento (script `design/cobertura-classes.cjs`); 25 telas e estados capturados do app em modo exemplo, mais os componentes isolados.
+- Controles que respondem ao clique (script embutido no `vitrine.modelo.html`): botão "Tema" (sistema, claro, escuro; gerado de `tokens.css`), seletores de idioma e passou/falhou/pular e botão discreto "armado", na seção Componentes. O resto é desenho. Prova: `node design/testar-vitrine.cjs` (Playwright por servidor local).
 - O veredito **amarelo** é derivado do verde (o modo exemplo do app não produz amarelo); a marcação é a mesma, muda só a classe.
 
 ## Dívida conhecida (medida na vitrine, nada corrigido)
@@ -211,10 +214,10 @@ Botões (`.btn-primary`, `-secondary`, `-quiet`, `-large`; desativado; "armado" 
 Medido por `checar-tela.cjs` em 10/11/2026 (celular de 390 px; claro e escuro). **Não corrigido de propósito**: muda a aparência do app instalado; decisão do mantenedor.
 - **Alvo de toque abaixo de 44 px:** `.seg-btn` 30 px de altura, `.lang-btn` 28, `.nav-item` 37, `.skip` 39, `.btn` 43 (a HIG pede 44).
 - **Contraste abaixo de 4,5:1 em texto pequeno:** `--ink-3` no claro 3,24:1 (`.nav-meta`, `.brand-tagline`, `.nav-device-name`, `p.fine`), 3,42:1 (`dl.tech dt`), 3,67:1 (`.stage-title`, `.check-title` desativado); `dl.tech dt` no escuro 4,29:1.
-- **Literais restantes:** `ui/src/qr.ts` (QR preto sobre branco: precisa do contraste máximo, de propósito) e `ui/src/report.ts` (o relatório exportado é um HTML autônomo com paleta própria embutida: não pode ler o CSS do app).
+- **Literais restantes:** só `ui/src/qr.ts` (QR preto sobre branco: precisa do contraste máximo, de propósito). A paleta do relatório exportado agora sai de `tokens.css` (`ui/src/report-palette.ts`). Contagem em [FORA-DO-TOKEN](FORA-DO-TOKEN.md).
 
 ## Migração (o que falta para "tudo por token")
 
 1. **Feito em 10/11/2026:** as cores, a sombra e as fontes moram em `design/tokens.css` (lido por `@import`); os 5 literais que sobravam no CSS viraram token (`--paper`, `--shadow-pill`); prova: 1972 pares elemento×estado com estilo calculado idêntico antes e depois, claro e escuro.
 2. **Espaço, raio, tamanho de letra e duração de movimento** continuam px/s literais (centenas de ocorrências). Se virarem token, cada troca deve manter o valor exato; o ganho é consistência, o risco é visual.
-3. **`report.ts`** poderia gerar a paleta do relatório a partir de `tokens.css` em tempo de build; hoje há duas cópias à mão.
+3. **Feito:** `report.ts` monta a paleta do relatório a partir de `tokens.css` (`report-palette.ts`, import `?raw`). Efeito visível mínimo no relatório: textos secundários usam `--ink-2` (mais escuro que antes no claro) e os tons de situação são os do app (diferença de 1 a 3 pontos por canal).
