@@ -66,9 +66,8 @@ button { font: inherit; color: inherit; }
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 40px; padding: 9px 18px; border-radius: 10px;
   font-size: 15px; font-weight: 600; cursor: pointer; border: 1px solid transparent;
-  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
 }
-.btn:active { transform: translateY(1px); }
 .btn-primary { background: var(--seal); color: var(--seal-ink); }
 .btn-primary:hover { background: var(--seal-hover); }
 .btn-primary:disabled { background: var(--line-strong); color: var(--surface); cursor: not-allowed; transform: none; }
@@ -351,6 +350,32 @@ button { font: inherit; color: inherit; }
   .kv-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .qr-card { grid-template-columns: minmax(0, 1fr); }
   .mock-badge { display: none; }
+}
+
+/* ------------------------------------------------------------- life: hover and press
+   Every control answers the pointer: color changes always (made instant under reduced motion by the block
+   below), and a short movement (lift on hover, sink on press) only when the system allows motion.
+   Disabled controls never move. */
+.lang-btn, .seg-btn, .nav-item, .device, .check-how summary {
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+.lang-btn:hover { color: var(--ink); }
+.device:hover { border-color: var(--line-strong); }
+.device.is-selected:hover { border-color: var(--seal); }
+.check-how summary:hover .check-title { color: var(--ink); }
+.check-how summary:hover .check-chevron { color: var(--ink-2); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn:not(:disabled):not([aria-disabled="true"]):hover { transform: translateY(-1px); }
+  .btn-primary:not(:disabled):hover { box-shadow: var(--shadow); }
+  .btn:not(:disabled):not([aria-disabled="true"]):active { transform: translateY(1px) scale(0.98); box-shadow: none; }
+  .lang-btn:active, .seg-btn:active { transform: scale(0.94); }
+  .nav-item:hover { transform: translateX(2px); }
+  .nav-item:active { transform: translateX(2px) scale(0.98); }
+  .device:hover { transform: translateY(-2px); }
+  .device:active { transform: translateY(0) scale(0.99); }
+  .check-how:not([open]) summary:hover .check-chevron { transform: translateX(2px); }
+  .check-how summary:active { transform: translateY(1px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
