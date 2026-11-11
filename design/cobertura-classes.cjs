@@ -1,4 +1,4 @@
-// cobertura-classes.cjs: "a vitrine cobre todo componente?" como NÚMERO (O3.7, 10/11/2026).
+// cobertura-classes.cjs: "a vitrine cobre todo componente?" como NÚMERO.
 // Abre a vitrine num Chromium (servida em 127.0.0.1), junta todas as classes que as folhas de estilo da
 // própria página definem (inclui @media/@supports) e testa se cada uma aparece em algum elemento do DOM.
 // Uso: node cobertura-classes.cjs <vitrine.html> [--ignorar <arquivo.txt>] [--json <saida.json>] [--prefixo <p>]
@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
-const CANDIDATOS_PW = ['C:/Dev/playwright/packages/playwright-core', 'playwright-core', 'playwright'];
+const CANDIDATOS_PW = [process.env.PLAYWRIGHT_CORE, 'playwright-core', 'playwright'].filter(Boolean);
 function carregarPlaywright() {
   for (const c of CANDIDATOS_PW) { try { return require(c); } catch {} }
   throw new Error('playwright-core não encontrado');

@@ -106,7 +106,7 @@ components:
 
 # Design System: Lacre (Seal Check)
 
-> **Estado: provisório, a confirmar pelo Gabriel.** Documento gerado em 10/11/2026 a partir do código
+> **Estado: provisório, a confirmar pelo mantenedor.** Documento gerado em 10/11/2026 a partir do código
 > (`ui/src/styles.css`, antes de `design/tokens.css`) pelo fluxo `document` da skill `impeccable`, modo "scan".
 > O Creative North Star e a linguagem qualitativa abaixo são **proposta** (a skill pergunta ao dono; a sessão
 > que gerou não tinha com quem falar). Os valores (cor, tamanho, raio) são os do código, sem invenção.
@@ -208,7 +208,7 @@ Botões (`.btn-primary`, `-secondary`, `-quiet`, `-large`; desativado; "armado" 
 
 ## Dívida conhecida (medida na vitrine, nada corrigido)
 
-Medido por `checar-tela.cjs` em 10/11/2026 (celular de 390 px; claro e escuro). **Não corrigido de propósito**: muda a aparência do app instalado; decisão do Gabriel.
+Medido por `checar-tela.cjs` em 10/11/2026 (celular de 390 px; claro e escuro). **Não corrigido de propósito**: muda a aparência do app instalado; decisão do mantenedor.
 - **Alvo de toque abaixo de 44 px:** `.seg-btn` 30 px de altura, `.lang-btn` 28, `.nav-item` 37, `.skip` 39, `.btn` 43 (a HIG pede 44).
 - **Contraste abaixo de 4,5:1 em texto pequeno:** `--ink-3` no claro 3,24:1 (`.nav-meta`, `.brand-tagline`, `.nav-device-name`, `p.fine`), 3,42:1 (`dl.tech dt`), 3,67:1 (`.stage-title`, `.check-title` desativado); `dl.tech dt` no escuro 4,29:1.
 - **Literais restantes:** `ui/src/qr.ts` (QR preto sobre branco: precisa do contraste máximo, de propósito) e `ui/src/report.ts` (o relatório exportado é um HTML autônomo com paleta própria embutida: não pode ler o CSS do app).

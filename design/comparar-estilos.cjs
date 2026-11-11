@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const CANDIDATOS = ['playwright-core', 'playwright', 'C:/Dev/playwright/packages/playwright-core'];
+const CANDIDATOS = ['playwright-core', 'playwright', process.env.PLAYWRIGHT_CORE].filter(Boolean);
 const pw = () => { for (const c of CANDIDATOS) { try { return require(c); } catch {} } throw new Error('playwright-core não encontrado'); };
 const MIME = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json' };
 

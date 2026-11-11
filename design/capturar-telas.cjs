@@ -2,13 +2,13 @@
 // em cada estado de tela, para a vitrine usar as classes e o HTML de verdade (nada desenhado à mão que possa
 // divergir do app). Saída: design/quadros.json  { id: { titulo, html } }.
 // Uso (da raiz do repo, depois de `npm run ui:build`):  node design/capturar-telas.cjs [pasta-do-dist]
-// Chromium: o do fork da casa (C:/Dev/playwright) ou playwright-core/playwright do node_modules, se houver.
+// Chromium: playwright-core ou playwright (node_modules), ou a pasta indicada em PLAYWRIGHT_CORE.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
-const CANDIDATOS = ['playwright-core', 'playwright', 'C:/Dev/playwright/packages/playwright-core'];
+const CANDIDATOS = ['playwright-core', 'playwright', process.env.PLAYWRIGHT_CORE].filter(Boolean);
 function pw() { for (const c of CANDIDATOS) { try { return require(c); } catch {} } throw new Error('playwright-core não encontrado'); }
 
 const raiz = path.resolve(__dirname, '..');
