@@ -12,7 +12,17 @@
 /*APP-CSS*/
 </style>
 <style>
+/* tema escolhido na vitrine (gerado de tokens.css por montar-vitrine.cjs; sem tema escolhido, vale o do sistema) */
+/*TEMAS*/
+</style>
+<style>
 /* chrome da vitrine (só a moldura; nada disto vai para o app) */
+.vit-tema { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.vit-tema-rotulo { font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+.vit-icones { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; }
+.vit-icone { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.vit-icone svg { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.vit-icone-ok { color: var(--ok); } .vit-icone-warn { color: var(--warn); } .vit-icone-alert { color: var(--alert); } .vit-icone-info { color: var(--ink-2); }
 .vit { max-width: 1180px; margin: 0 auto; padding: 24px 24px 80px; }
 .vit-topo { display: grid; gap: 6px; margin-bottom: 24px; }
 .vit-topo h1 { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; }
@@ -46,6 +56,12 @@
     <p class="vit-nota">Tokens, componentes e telas do app como ele é hoje. As telas abaixo são o HTML real do app em modo exemplo (dados
     fictícios do próprio repositório), capturado por <code>design/capturar-telas.cjs</code>; os estilos são os de
     <code>ui/src/styles.css</code> embutidos aqui. Claro e escuro seguem o tema do sistema. Regerar: <code>node design/montar-vitrine.cjs</code>.</p>
+    <div class="vit-tema" role="group" aria-label="Tema da vitrine">
+      <span class="vit-tema-rotulo">Tema</span>
+      <div class="seg" role="group" aria-label="Tema da vitrine" data-demo="tema">
+        <button type="button" class="seg-btn seg-skip" data-tema="sistema" aria-pressed="true">Sistema</button><button type="button" class="seg-btn seg-skip" data-tema="claro" aria-pressed="false">Claro</button><button type="button" class="seg-btn seg-skip" data-tema="escuro" aria-pressed="false">Escuro</button>
+      </div>
+    </div>
     <ul class="vit-nav">
       <li><a href="#tokens">Tokens</a></li>
       <li><a href="#componentes">Componentes</a></li>
@@ -72,7 +88,8 @@
 
   <section id="componentes">
     <h2>Componentes</h2>
-    <p class="vit-nota">Cada peça isolada, com os estados. O contexto de uso está nas telas, mais abaixo.</p>
+    <p class="vit-nota">Cada peça isolada, com os estados. O contexto de uso está nas telas, mais abaixo. Nesta seção os seletores
+    (idioma, passou/falhou/pular) e o botão discreto respondem ao clique; os demais botões são só desenho.</p>
 
     <h3>Marca e barra do topo</h3>
     <div class="vit-caixa">
@@ -149,6 +166,18 @@
     <h3>Veredito (a única peça "alta" da tela de resultado)</h3>
     <!--VEREDITOS-->
 
+    <h3>Ícones</h3>
+    <p class="vit-nota">Regra: ícone é Lucide, nunca emoji. No app, o pacote do projeto; nesta vitrine standalone, SVG inline do
+    <code>lucide-static</code> (ISC), com <code>stroke="currentColor"</code>, traço de 2 e o mesmo tamanho em todo lugar. Ícone
+    decorativo leva <code>aria-hidden="true"</code>; ícone que é o único conteúdo de um botão leva <code>aria-label</code>. A cor
+    nunca é o único sinal: ícone vem com texto. Hoje o app só usa arte própria (selo, marca, aparelho); a amostra abaixo mostra o traço a seguir quando um ícone novo for preciso.</p>
+    <div class="vit-caixa vit-icones">
+      <span class="vit-icone vit-icone-ok"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>Confere</span>
+      <span class="vit-icone vit-icone-warn"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Atenção</span>
+      <span class="vit-icone vit-icone-alert"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>Problema</span>
+      <span class="vit-icone vit-icone-info"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Informação</span>
+    </div>
+
     <h3>Seletores</h3>
     <div class="vit-caixa vit-linha">
       <div class="seg" role="group"><button type="button" class="seg-btn seg-pass" aria-pressed="true">Passou</button><button type="button" class="seg-btn seg-fail" aria-pressed="false">Falhou</button><button type="button" class="seg-btn seg-skip" aria-pressed="false">Pular</button></div>
@@ -163,5 +192,37 @@
     <!--QUADROS-->
   </section>
 </div>
+<script>
+(function () {
+  var raiz = document.documentElement;
+  function valores() {
+    var cs = getComputedStyle(raiz);
+    document.querySelectorAll('[data-valor]').forEach(function (e) { e.textContent = cs.getPropertyValue(e.dataset.valor).trim(); });
+  }
+  // tema: sistema (sem atributo), claro ou escuro; os valores de cor mostrados acompanham
+  document.querySelectorAll('[data-demo="tema"] [data-tema]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.dataset.tema;
+      if (t === 'sistema') raiz.removeAttribute('data-tema'); else raiz.setAttribute('data-tema', t);
+      b.parentNode.querySelectorAll('[data-tema]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      valores();
+    });
+  });
+  // seletores da seção Componentes: um apertado por grupo (idioma, passou/falhou/pular)
+  document.querySelectorAll('#componentes .seg, #componentes .lang').forEach(function (g) {
+    g.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button');
+      if (!b || !g.contains(b)) return;
+      g.querySelectorAll('button').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+    });
+  });
+  // botão discreto: alterna o estado "armado" (o app usa para confirmar uma ação destrutiva)
+  document.querySelectorAll('#componentes .btn-quiet:not([disabled])').forEach(function (b) {
+    b.addEventListener('click', function () { b.classList.toggle('is-armed'); });
+  });
+  valores();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', valores);
+})();
+</script>
 </body>
 </html>

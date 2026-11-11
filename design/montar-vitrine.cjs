@@ -18,9 +18,13 @@ const bloco = tokens.match(/:root\s*\{([^}]*)\}/)[1];
 const cores = [...bloco.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].filter(([, n]) => !/^--(font|font-display|mono|shadow|shadow-pill)$/.test(n));
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const grade = '<h3>Cor (o valor mostrado é o do tema ativo)</h3>\n<div class="vit-grade">' + cores.map(([, n, v]) =>
-  `<div class="vit-cor"><div class="vit-cor-amostra" style="background: var(${n});"></div><div class="vit-cor-nome"><code>${n}</code><span data-valor="${n}"></span></div></div>`).join('') + '</div>' +
-  // o valor é lido do tema ativo em tempo de execução: o fonte da vitrine não repete nenhum hexadecimal fora do tokens.css
-  '<script>for (const e of document.querySelectorAll("[data-valor]")) e.textContent = getComputedStyle(document.documentElement).getPropertyValue(e.dataset.valor).trim();<\/script>';
+  `<div class="vit-cor"><div class="vit-cor-amostra" style="background: var(${n});"></div><div class="vit-cor-nome"><code>${n}</code><span data-valor="${n}"></span></div></div>`).join('') + '</div>';
+// o valor mostrado é lido do tema ativo em tempo de execução (script no fim do modelo): o fonte da vitrine não repete nenhum hexadecimal fora do tokens.css
+
+// tema escolhido no botão "Tema" da vitrine: o mesmo conteúdo dos blocos de tokens.css sob [data-tema], gerado (nada copiado à mão)
+const blocoEscuro = tokens.match(/prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{([^}]*)\}/)[1];
+const temas = `:root[data-tema="claro"] { color-scheme: light; ${bloco.replace(/color-scheme:[^;]+;/, '').replace(/\s+/g, ' ').trim()} }\n` +
+  `:root[data-tema="escuro"] { color-scheme: dark; ${blocoEscuro.replace(/\s+/g, ' ').trim()} }`;
 
 const telas = Object.entries(quadros).map(([id, q]) =>
   `<div class="vit-rotulo" id="q-${id}"><h3>${esc(q.titulo)}</h3><code>${id}</code></div>\n<div class="vit-moldura">${q.html}</div>`).join('\n');
@@ -37,6 +41,7 @@ const veredito = [['verde', verde], ['amarelo (derivado)', amarelo], ['vermelho'
 const trocar = (txt, marca, valor) => { if (!txt.includes(marca)) throw new Error('marca ausente no modelo: ' + marca); return txt.split(marca).join(valor); };
 modelo = trocar(modelo, '/*TOKENS*/', tokens.trimEnd());
 modelo = trocar(modelo, '/*APP-CSS*/', appCss.trimEnd());
+modelo = trocar(modelo, '/*TEMAS*/', temas);
 modelo = trocar(modelo, '<!--TOKENS-COR-->', grade);
 modelo = trocar(modelo, '<!--QUADROS-->', telas);
 modelo = trocar(modelo, '<!--VEREDITOS-->', veredito);
