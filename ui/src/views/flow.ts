@@ -1,7 +1,8 @@
 // Screens before the results: startup, prerequisites, connect, reading.
 import { h, svg } from "../dom";
 import { t } from "../i18n";
-import { connectArt, icons } from "../art";
+import { connectArt } from "../art";
+import { icons, statusIcon } from "../icons";
 import { modelName } from "../models";
 import type { Ctx } from "../state";
 import { READ_STEPS } from "../types";
@@ -61,7 +62,7 @@ export function connectView({ s, act }: Ctx): HTMLElement {
   } else {
     const pick = devices.length > 1;
     status = h("div", { class: "found" },
-      h("p", { class: "found-title", role: "status", "aria-live": "polite" }, pick ? d.pickOne : d.found),
+      h("p", { class: "found-title", role: "status", "aria-live": "polite" }, svg(statusIcon("ok"), "found-icon"), h("span", null, pick ? d.pickOne : d.found)),
       h("div", { class: "devices", role: pick ? "radiogroup" : null },
         devices.map((dev) => {
           const sel = dev.udid === s.selectedUdid;

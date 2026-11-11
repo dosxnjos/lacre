@@ -5,6 +5,7 @@ import { h } from "../dom";
 import { formatDate, t } from "../i18n";
 import type { Ctx, State } from "../state";
 import type { OldArchive } from "../types";
+import { noteLine } from "./common";
 
 /** Archive date "YYYY-MM-DDTHH:MM:SS" (local time, from the archive name) in the current language. */
 function archiveDate(a: OldArchive): string {
@@ -47,5 +48,5 @@ function oldArchivesCard({ s, act }: Ctx): HTMLElement | null {
 
 function archivesNote(s: State): HTMLElement | null {
   const note = s.archives.note;
-  return note ? h("p", { class: `export-note note-${note.kind}`, role: "status", tabindex: "-1", "data-fk": "archives-note" }, note.text) : null;
+  return note ? noteLine(note, { tabindex: "-1", "data-fk": "archives-note" }) : null;
 }

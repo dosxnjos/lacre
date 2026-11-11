@@ -1,8 +1,8 @@
 import { h, svg } from "../dom";
 import { t } from "../i18n";
-import { icons } from "../art";
+import { icons } from "../icons";
 import type { Ctx } from "../state";
-import { button } from "./common";
+import { button, noteLine } from "./common";
 import { checkStats } from "./tests";
 import { sectionById } from "./results";
 
@@ -23,7 +23,7 @@ export function reportView({ s, act }: Ctx): HTMLElement {
       h("div", { class: "actions" },
         button(d.exportHtml, () => act.exportReport("html"), "primary"),
         button(d.exportTxt, () => act.exportReport("txt"), "secondary")),
-      note ? h("p", { class: `export-note note-${note.kind}`, role: "status" }, note.text) : null,
+      note ? noteLine(note) : null,
       h("p", { class: "fine" }, svg(icons.shield, "inline-icon"), d.privacy),
     ),
   );

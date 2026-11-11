@@ -1,6 +1,6 @@
 import { h, svg } from "../dom";
 import { t } from "../i18n";
-import { icons } from "../art";
+import { icons } from "../icons";
 import { CHECKLIST, GROUPS, TOUCH_TEST_URL, type CheckItem } from "../checklist";
 import { qrSvg } from "../qr";
 import type { Ctx, State } from "../state";

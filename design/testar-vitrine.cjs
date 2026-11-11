@@ -88,6 +88,7 @@ const teste = async (nome, fn) => { try { await fn(); ok++; console.log('ok    '
       const sel = '#componentes .btn-quiet:not([disabled]):not(.is-armed)';
       const antes = await cor(sel, 'color');
       await page.click(sel);
+      await page.waitForTimeout(300); // a cor do botão tem transição de 0,15 s (regra de vida: hover e clique)
       assert.notStrictEqual(antes, await cor('#componentes .btn-quiet.is-armed', 'color'));
     });
     await teste('Vitrine sem erro de console e sem emoji', async () => {
